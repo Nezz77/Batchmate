@@ -1,0 +1,58 @@
+{
+  "name": "batchmate",
+  "version": "1.0.0",
+  "private": true,
+  "description": "University Batch Management System",
+  "author": "Antigravity",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && tsc -p tsconfig.node.json",
+    "preview": "vite preview",
+    "ingest": "tsx --env-file=.env scripts/ingest.ts",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "prisma:generate": "prisma generate",
+    "electron:dev": "vite",
+    "electron:build": "npm run build && electron-builder",
+    "electron:pack": "npm run build && electron-builder --dir"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "html-to-image": "^1.11.11",
+    "lucide-react": "^0.525.0",
+    "pdf2json": "^4.0.3",
+    "pdfjs-dist": "^6.0.227",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
+    "recharts": "^2.15.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.1.2",
+    "dotenv": "^17.4.2",
+    "electron": "^34.0.0",
+    "electron-builder": "^26.0.12",
+    "prisma": "^5.22.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^8.0.3"
+  },
+  "allowScripts": {
+    "electron": true,
+    "electron-winstaller": true,
+    "esbuild": true,
+    "fsevents": true,
+    "@prisma/client": true,
+    "@prisma/engines": true,
+    "prisma": true
+  }
+}

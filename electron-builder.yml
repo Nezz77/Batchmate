@@ -1,0 +1,55 @@
+appId: com.antigravity.batchmate
+productName: Batchmate
+copyright: Copyright © 2026 Antigravity
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - node_modules/@prisma/client/**/*
+  - node_modules/.prisma/**/*
+  - prisma/**/*
+  - "!node_modules/@prisma/engines/**/*"
+
+extraResources:
+  - from: app_icons/
+    to: app_icons/
+  - from: dev.db
+    to: batchmate.db
+
+mac:
+  icon: app_icons/batchmate.png
+  category: public.app-category.education
+  target:
+    - dmg
+    - zip
+
+win:
+  icon: app_icons/batchmate.png
+  target:
+    - nsis
+    - portable
+
+linux:
+  icon: app_icons/batchmate.png
+  category: Education
+  target:
+    - AppImage
+    - deb
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
