@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, LayoutGrid, List, SlidersHorizontal } from 'lucide-react'
+import { Search, LayoutGrid, List, SlidersHorizontal, UserPlus } from 'lucide-react'
 import StudentCard from '../components/StudentCard'
 import StudentModal from '../components/StudentModal'
+import CreateStudentModal from '../components/CreateStudentModal'
 import type { Student } from '../types/electron.d'
 
 type ViewMode = 'grid' | 'list'
@@ -12,6 +13,7 @@ export default function Students() {
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selected, setSelected] = useState<Student | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   // Filters
@@ -66,6 +68,17 @@ export default function Students() {
     }
   }
 
+  const handleCreate = async (data: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await window.api.students.create(data)
+      showToast('Student created successfully')
+      setIsCreating(false)
+      fetchStudents()
+    } catch {
+      showToast('Failed to create student', 'error')
+    }
+  }
+
   return (
     <div>
       <div className="page-header animate-in">
@@ -76,8 +89,15 @@ export default function Students() {
               {loading ? 'Loading…' : `${students.length} student${students.length !== 1 ? 's' : ''} found`}
             </p>
           </div>
-          {/* View Toggle */}
-          <div style={{ display: 'flex', gap: 4, background: 'var(--bg-card)', padding: 4, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+          {/* Actions & View Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              className="btn btn-primary btn-sm"
+              onClick={() => setIsCreating(true)}
+            >
+              <UserPlus size={16} /> Add Student
+            </button>
+            <div style={{ display: 'flex', gap: 4, background: 'var(--bg-card)', padding: 4, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
             <button
               className={`btn btn-ghost btn-icon ${viewMode === 'grid' ? 'btn-secondary' : ''}`}
               onClick={() => setViewMode('grid')}
@@ -94,6 +114,7 @@ export default function Students() {
             </button>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Filters */}
@@ -225,6 +246,14 @@ export default function Students() {
           onClose={() => setSelected(null)}
           onSave={handleSave}
           onDelete={handleDelete}
+        />
+      )}
+
+      {/* Create Modal */}
+      {isCreating && (
+        <CreateStudentModal
+          onClose={() => setIsCreating(false)}
+          onCreate={handleCreate}
         />
       )}
 

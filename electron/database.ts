@@ -323,6 +323,14 @@ export function registerDatabaseHandlers() {
     })
   })
 
+  // ── Students: Get Results ──────────────────────────────────
+  ipcMain.handle('db:students:getResults', async (_, studentId: string) => {
+    return prisma.courseResult.findMany({
+      where: { studentId },
+      orderBy: { semester: 'asc' }
+    })
+  })
+
   // ── Result Sheets: Get All ─────────────────────────────────
   ipcMain.handle('db:resultSheets:getAll', async () => {
     return prisma.resultSheet.findMany({ orderBy: { uploadedAt: 'desc' } })

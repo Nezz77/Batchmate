@@ -500,6 +500,7 @@ a:hover {
   font-size: 20px;
   font-weight: 700;
   color: var(--accent-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .student-avatar img {
@@ -507,6 +508,7 @@ a:hover {
   height: 100%;
   border-radius: var(--radius-full);
   object-fit: cover;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .student-info {
@@ -869,7 +871,7 @@ a:hover {
   border-radius: var(--radius-xl);
   padding: 32px;
   width: 90%;
-  max-width: 560px;
+  max-width: 680px;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: var(--shadow-xl);

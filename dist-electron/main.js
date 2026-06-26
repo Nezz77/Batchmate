@@ -277,6 +277,12 @@ function registerDatabaseHandlers() {
       return new Date(a.dateOfBirth).getDate() - new Date(b.dateOfBirth).getDate();
     });
   });
+  electron.ipcMain.handle("db:students:getResults", async (_, studentId) => {
+    return prisma.courseResult.findMany({
+      where: { studentId },
+      orderBy: { semester: "asc" }
+    });
+  });
   electron.ipcMain.handle("db:resultSheets:getAll", async () => {
     return prisma.resultSheet.findMany({ orderBy: { uploadedAt: "desc" } });
   });

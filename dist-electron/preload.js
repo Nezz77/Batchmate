@@ -11,7 +11,8 @@ const api = {
     deleteAll: () => electron.ipcRenderer.invoke("db:students:deleteAll"),
     importBulk: (records) => electron.ipcRenderer.invoke("db:students:importBulk", records),
     getStats: () => electron.ipcRenderer.invoke("db:students:getStats"),
-    getBirthdays: (month) => electron.ipcRenderer.invoke("db:students:getBirthdays", month)
+    getBirthdays: (month) => electron.ipcRenderer.invoke("db:students:getBirthdays", month),
+    getResults: (studentId) => electron.ipcRenderer.invoke("db:students:getResults", studentId)
   },
   // ── Result sheet operations ────────────────────────────────
   resultSheets: {

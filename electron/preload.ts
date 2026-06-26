@@ -36,6 +36,9 @@ const api = {
 
     getBirthdays: (month?: number) =>
       ipcRenderer.invoke('db:students:getBirthdays', month),
+
+    getResults: (studentId: string) =>
+      ipcRenderer.invoke('db:students:getResults', studentId),
   },
 
   // ── Result sheet operations ────────────────────────────────

@@ -31,6 +31,17 @@ export interface ResultSheet {
   uploadedAt: string
 }
 
+export interface CourseResult {
+  id: string
+  studentId: string
+  subjectCode: string
+  subjectName: string | null
+  grade: string
+  credits: number
+  semester: string | null
+  createdAt: string
+}
+
 export interface DashboardStats {
   totalStudents: number
   avgGpa: number
