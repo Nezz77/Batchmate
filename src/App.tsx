@@ -9,6 +9,11 @@ import Birthdays from './pages/Birthdays'
 export default function App() {
   return (
     <HashRouter>
+      <div className="ambient-background">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
       <div className="app-layout">
         <Sidebar />
         <main className="main-content">

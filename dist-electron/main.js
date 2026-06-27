@@ -162,10 +162,10 @@ function registerDatabaseHandlers() {
         }
         const idx = String(record.indexNumber).trim().toUpperCase();
         let derivedProg = record.degreeProgramme;
-        const prefix = idx.substring(0, 3);
-        if (prefix === "244") derivedProg = "IT";
-        else if (prefix === "245") derivedProg = "ITM";
-        else if (prefix === "246") derivedProg = "AI";
+        const degreeCode = idx.substring(2, 4);
+        if (degreeCode === "40" || degreeCode === "41") derivedProg = "IT";
+        else if (degreeCode === "50" || degreeCode === "51") derivedProg = "ITM";
+        else if (degreeCode === "55") derivedProg = "AI";
         else if (!derivedProg) derivedProg = "IT";
         const updateData = {
           fullName: record.fullName,

@@ -45,12 +45,12 @@ async function main() {
         dateOfBirth = new Date("2000-01-01");
       }
 
-      // Determine degree programme based on index number prefix (e.g. 244 -> IT, 245 -> ITM)
-      const prefix = indexNumber.substring(0, 3);
+      // Determine degree programme based on index number (3rd and 4th characters)
+      const degreeCode = indexNumber.substring(2, 4);
       let degreeProgramme = "IT"; // default
-      if (prefix === "244") degreeProgramme = "IT";
-      else if (prefix === "245") degreeProgramme = "ITM";
-      else if (prefix === "246") degreeProgramme = "AI";
+      if (degreeCode === "40" || degreeCode === "41") degreeProgramme = "IT";
+      else if (degreeCode === "50" || degreeCode === "51") degreeProgramme = "ITM";
+      else if (degreeCode === "55") degreeProgramme = "AI";
 
       // Extract batch from index number (e.g. 24XXXX -> "24")
       const batch = indexNumber.substring(0, 2) || "24";

@@ -6,6 +6,7 @@ import {
   FileText,
   Cake,
 } from 'lucide-react'
+import ThemeSwitcher from './ThemeSwitcher'
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -53,7 +54,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="sidebar-footer">
+      <div className="sidebar-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <ThemeSwitcher />
         <p className="sidebar-footer-text">Batchmate v1.0.0</p>
       </div>
     </aside>
