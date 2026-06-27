@@ -24,6 +24,10 @@ export async function initDatabase() {
     }
   }
 
+  if (!fs.existsSync(resultSheetsDir)) {
+    fs.mkdirSync(resultSheetsDir, { recursive: true })
+  }
+
   prisma = new PrismaClient({
     datasourceUrl: `file:${dbPath}`,
   })
@@ -403,7 +407,7 @@ export function registerDatabaseHandlers() {
     // Parse PDF to extract grades
     if (data.filename.toLowerCase().endsWith('.pdf')) {
       try {
-        const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+        const pdfjsLib = await import(/* @vite-ignore */ 'pdfjs-dist/legacy/build/pdf.mjs');
         const doc = await pdfjsLib.getDocument({ data: new Uint8Array(fileBuffer) }).promise;
         let text = '';
         for (let i = 1; i <= doc.numPages; i++) {
@@ -458,6 +462,16 @@ export function registerDatabaseHandlers() {
             }
           }
 
+          if (!data.subjectCode) {
+            await prisma.resultSheet.update({
+              where: { id: sheet.id },
+              data: {
+                subjectCode: actualSubjectCode,
+                subjectName: actualSubjectInfo?.name
+              }
+            })
+          }
+
         // Recalculate GPA for all affected students
         for (const studentId of uniqueUpdates) {
           await recalculateGpa(studentId)
@@ -475,10 +489,34 @@ export function registerDatabaseHandlers() {
   // ── Result Sheets: Delete ──────────────────────────────────
   ipcMain.handle('db:resultSheets:delete', async (_, id: string) => {
     const sheet = await prisma.resultSheet.findUnique({ where: { id } })
-    if (sheet && fs.existsSync(sheet.filepath)) {
-      fs.unlinkSync(sheet.filepath)
+    if (sheet) {
+      if (sheet.subjectCode && sheet.batch) {
+        // Find all course results for this subject and batch
+        const studentsInBatch = await prisma.student.findMany({
+          where: { batch: sheet.batch },
+          select: { id: true }
+        })
+        const studentIds = studentsInBatch.map(s => s.id)
+
+        await prisma.courseResult.deleteMany({
+          where: {
+            subjectCode: sheet.subjectCode,
+            studentId: { in: studentIds }
+          }
+        })
+        
+        // Recalculate GPA for affected students
+        for (const studentId of studentIds) {
+          await recalculateGpa(studentId)
+        }
+      }
+
+      if (fs.existsSync(sheet.filepath)) {
+        fs.unlinkSync(sheet.filepath)
+      }
+      return prisma.resultSheet.delete({ where: { id } })
     }
-    return prisma.resultSheet.delete({ where: { id } })
+    return null
   })
 
   // ── Result Sheets: Open ────────────────────────────────────

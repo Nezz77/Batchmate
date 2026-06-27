@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { FileText, Upload, Trash2, ExternalLink } from 'lucide-react'
-import type { ResultSheet } from '../types/electron.d'
+import type { ResultSheet, Subject } from '../types/electron.d'
 
 export default function Results() {
   const [sheets, setSheets] = useState<ResultSheet[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
@@ -29,8 +30,12 @@ export default function Results() {
 
   const loadSheets = async () => {
     setLoading(true)
-    const data = await window.api.resultSheets.getAll()
-    setSheets(data)
+    const [sheetsData, subjectsData] = await Promise.all([
+      window.api.resultSheets.getAll(),
+      window.api.subjects.getAll()
+    ])
+    setSheets(sheetsData)
+    setSubjects(subjectsData)
     setLoading(false)
   }
 
@@ -150,25 +155,28 @@ export default function Results() {
           </div>
 
           <div className="form-row" style={{ marginBottom: 20 }}>
-            <div className="form-group">
-              <label className="form-label">Subject Code (optional)</label>
-              <input
+            <div className="form-group" style={{ width: '100%' }}>
+              <label className="form-label">Subject (Optional - auto-detects from PDF if left empty)</label>
+              <select
                 id="result-subject-code"
-                className="form-input"
+                className="filter-select w-full"
                 value={uploadForm.subjectCode}
-                onChange={e => setUploadForm({ ...uploadForm, subjectCode: e.target.value })}
-                placeholder="e.g. IN1611"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Subject Name (optional)</label>
-              <input
-                id="result-subject-name"
-                className="form-input"
-                value={uploadForm.subjectName}
-                onChange={e => setUploadForm({ ...uploadForm, subjectName: e.target.value })}
-                placeholder="e.g. Multimedia Technologies"
-              />
+                onChange={e => {
+                  const subj = subjects.find(s => s.code === e.target.value)
+                  setUploadForm({
+                    ...uploadForm,
+                    subjectCode: e.target.value,
+                    subjectName: subj ? subj.name : ''
+                  })
+                }}
+              >
+                <option value="">-- Auto-detect from PDF --</option>
+                {subjects.map(subj => (
+                  <option key={subj.code} value={subj.code}>
+                    {subj.code} - {subj.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
