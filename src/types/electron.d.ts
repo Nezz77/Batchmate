@@ -51,6 +51,8 @@ export interface ElectronAPI {
     create(data: Partial<Student>): Promise<Student>
     update(id: string, data: Partial<Student>): Promise<Student>
     delete(id: string): Promise<void>
+    getResults: (studentId: string) => Promise<CourseResult[]>
+    getRank: (studentId: string) => Promise<{ rank: number, total: number, degree: string } | null>
   }
 }
 

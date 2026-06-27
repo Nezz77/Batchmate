@@ -350,6 +350,23 @@ export function registerDatabaseHandlers() {
     })
   })
 
+  // ── Students: Get Rank ─────────────────────────────────────
+  ipcMain.handle('db:students:getRank', async (_, studentId: string) => {
+    const student = await prisma.student.findUnique({ where: { id: studentId } })
+    if (!student) return null;
+    
+    // Get all students in the same degree and batch
+    const students = await prisma.student.findMany({
+      where: { degreeProgramme: student.degreeProgramme, batch: student.batch },
+      orderBy: { gpa: 'desc' },
+      select: { id: true }
+    })
+    
+    // Calculate rank
+    const rank = students.findIndex(s => s.id === student.id) + 1;
+    return { rank, total: students.length, degree: student.degreeProgramme }
+  })
+
   // ── Subjects: Get All ──────────────────────────────────────
   ipcMain.handle('db:subjects:getAll', async () => {
     return prisma.subject.findMany({ orderBy: [{ semester: 'asc' }, { code: 'asc' }] })

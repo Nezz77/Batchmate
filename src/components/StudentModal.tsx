@@ -21,6 +21,7 @@ export default function StudentModal({ student, onClose, onSave, onDelete }: Stu
   })
   const [activeTab, setActiveTab] = useState<'overview' | 'results'>('overview')
   const [results, setResults] = useState<CourseResult[]>([])
+  const [rankInfo, setRankInfo] = useState<{ rank: number, total: number, degree: string } | null>(null)
   const [photoEnlarged, setPhotoEnlarged] = useState(false)
 
   useEffect(() => {
@@ -37,8 +38,9 @@ export default function StudentModal({ student, onClose, onSave, onDelete }: Stu
       setActiveTab('overview')
       setPhotoEnlarged(false)
       
-      // Fetch results
+      // Fetch results and rank
       window.api.students.getResults(student.id).then(setResults).catch(console.error)
+      window.api.students.getRank(student.id).then(setRankInfo).catch(console.error)
     }
   }, [student])
 
@@ -259,6 +261,14 @@ export default function StudentModal({ student, onClose, onSave, onDelete }: Stu
                 <span className="form-label">{student.totalCredits < 15 ? 'SGPA (Incomplete)' : 'CGPA'}</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{student.gpa.toFixed(2)}</span>
               </div>
+              {rankInfo && (
+                <div className="form-group">
+                  <span className="form-label">Rank</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+                    #{rankInfo.rank} <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, fontSize: '12px' }}>of {rankInfo.total} in {rankInfo.degree}</span>
+                  </span>
+                </div>
+              )}
               <div className="form-group">
                 <span className="form-label">Added</span>
                 <span style={{ color: 'var(--text-primary)' }}>

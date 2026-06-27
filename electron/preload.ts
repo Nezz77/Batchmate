@@ -39,6 +39,9 @@ const api = {
 
     getResults: (studentId: string) =>
       ipcRenderer.invoke('db:students:getResults', studentId),
+
+    getRank: (studentId: string) =>
+      ipcRenderer.invoke('db:students:getRank', studentId),
   },
 
   // ── Subject operations ─────────────────────────────────────
