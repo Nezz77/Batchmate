@@ -15,6 +15,7 @@ export default function CreateStudentModal({ onClose, onCreate }: CreateStudentM
     dateOfBirth: '',
     degreeProgramme: 'IT',
     gpa: 0,
+    totalCredits: 0,
     batch: '',
     profileImage: null as string | null
   })

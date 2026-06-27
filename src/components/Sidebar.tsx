@@ -5,6 +5,7 @@ import {
   Upload,
   FileText,
   Cake,
+  BookOpen
 } from 'lucide-react'
 import ThemeSwitcher from './ThemeSwitcher'
 
@@ -13,6 +14,7 @@ const navItems = [
   { path: '/students', icon: Users, label: 'Students' },
   { path: '/import', icon: Upload, label: 'Import Data' },
   { path: '/results', icon: FileText, label: 'Result Sheets' },
+  { path: '/curriculum', icon: BookOpen, label: 'Semester Details' },
   { path: '/birthdays', icon: Cake, label: 'Birthdays' },
 ]
 

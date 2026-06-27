@@ -41,6 +41,21 @@ const api = {
       ipcRenderer.invoke('db:students:getResults', studentId),
   },
 
+  // ── Subject operations ─────────────────────────────────────
+  subjects: {
+    getAll: () =>
+      ipcRenderer.invoke('db:subjects:getAll'),
+
+    create: (data: any) =>
+      ipcRenderer.invoke('db:subjects:create', data),
+
+    update: (id: string, data: any) =>
+      ipcRenderer.invoke('db:subjects:update', id, data),
+
+    delete: (id: string) =>
+      ipcRenderer.invoke('db:subjects:delete', id),
+  },
+
   // ── Result sheet operations ────────────────────────────────
   resultSheets: {
     getAll: () =>

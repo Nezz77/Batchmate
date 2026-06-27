@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Students from './pages/Students'
 import Import from './pages/Import'
 import Results from './pages/Results'
+import Curriculum from './pages/Curriculum'
 import Birthdays from './pages/Birthdays'
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/students" element={<Students />} />
             <Route path="/import" element={<Import />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/curriculum" element={<Curriculum />} />
             <Route path="/birthdays" element={<Birthdays />} />
           </Routes>
         </main>

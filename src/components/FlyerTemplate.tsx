@@ -131,6 +131,10 @@ export default function FlyerTemplate({ student, flyerRef }: FlyerTemplateProps)
               alt={student.fullName}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               crossOrigin="anonymous"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).parentElement!.innerHTML = `<span style="font-size: 48px; font-weight: 800; color: rgba(255,255,255,0.8)">${getInitials(student.fullName)}</span>`;
+              }}
             />
           ) : (
             <span style={{ fontSize: '48px', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>

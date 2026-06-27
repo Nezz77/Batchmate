@@ -59,3 +59,9 @@ prisma/*.sqlite
 # Python
 .venv/
 .venv
+
+# Build Outputs
+/dist/
+/dist-electron/
+/release/
+/.vite/

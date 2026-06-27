@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import path from 'path'
 import fs from 'fs'
 
-const isDev = !app.isPackaged
+const isDev = !!process.env.VITE_DEV_SERVER_URL
 
 const dbPath = isDev 
   ? path.join(process.cwd(), 'prisma', 'dev.db')
@@ -55,20 +55,35 @@ async function recalculateGpa(studentId: string) {
     where: { studentId }
   })
   
+  // Fetch all subjects to check for isNonGpa
+  const allSubjects = await prisma.subject.findMany()
+  const subjectMap = new Map(allSubjects.map(s => [s.code, s]))
+  
   let totalCredits = 0
+  let gpaCredits = 0
   let totalPoints = 0
 
   for (const res of results) {
     if (GradePoints[res.grade] !== undefined) { // P, N, W are ignored
       totalCredits += res.credits
-      totalPoints += res.credits * GradePoints[res.grade]
+      
+      const subjectInfo = subjectMap.get(res.subjectCode)
+      const isNonGpa = subjectInfo?.isNonGpa || false
+      
+      if (!isNonGpa) {
+        gpaCredits += res.credits
+        totalPoints += res.credits * GradePoints[res.grade]
+      }
     }
   }
 
-  const gpa = totalCredits > 0 ? totalPoints / totalCredits : 0
+  const gpa = gpaCredits > 0 ? totalPoints / gpaCredits : 0
   await prisma.student.update({
     where: { id: studentId },
-    data: { gpa: Number(gpa.toFixed(2)) }
+    data: { 
+      gpa: Number(gpa.toFixed(2)),
+      totalCredits: Number(totalCredits.toFixed(1))
+    }
   })
 }
 
@@ -331,6 +346,26 @@ export function registerDatabaseHandlers() {
     })
   })
 
+  // ── Subjects: Get All ──────────────────────────────────────
+  ipcMain.handle('db:subjects:getAll', async () => {
+    return prisma.subject.findMany({ orderBy: [{ semester: 'asc' }, { code: 'asc' }] })
+  })
+
+  // ── Subjects: Create ───────────────────────────────────────
+  ipcMain.handle('db:subjects:create', async (_, data: any) => {
+    return prisma.subject.create({ data })
+  })
+
+  // ── Subjects: Update ───────────────────────────────────────
+  ipcMain.handle('db:subjects:update', async (_, id: string, data: any) => {
+    return prisma.subject.update({ where: { id }, data })
+  })
+
+  // ── Subjects: Delete ───────────────────────────────────────
+  ipcMain.handle('db:subjects:delete', async (_, id: string) => {
+    return await prisma.subject.delete({ where: { id } })
+  })
+
   // ── Result Sheets: Get All ─────────────────────────────────
   ipcMain.handle('db:resultSheets:getAll', async () => {
     return prisma.resultSheet.findMany({ orderBy: { uploadedAt: 'desc' } })
@@ -350,19 +385,23 @@ export function registerDatabaseHandlers() {
     const fileBuffer = Buffer.from(data.buffer)
     fs.writeFileSync(filepath, fileBuffer)
 
+    const subjectInfo = data.subjectCode 
+      ? await prisma.subject.findUnique({ where: { code: data.subjectCode } })
+      : null
+
     const sheet = await prisma.resultSheet.create({
       data: {
         filename: data.filename,
         filepath,
         batch: data.batch,
-        semester: data.semester,
+        semester: subjectInfo?.semester || data.semester,
         subjectCode: data.subjectCode || null,
-        subjectName: data.subjectName || null,
+        subjectName: subjectInfo?.name || data.subjectName || null,
       },
     })
 
     // Parse PDF to extract grades
-    if (data.filename.toLowerCase().endsWith('.pdf') && data.subjectCode) {
+    if (data.filename.toLowerCase().endsWith('.pdf')) {
       try {
         const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
         const doc = await pdfjsLib.getDocument({ data: new Uint8Array(fileBuffer) }).promise;
@@ -373,47 +412,58 @@ export function registerDatabaseHandlers() {
           text += content.items.map((item: any) => item.str).join(' ') + ' ';
         }
         
-        // Match index number (e.g. 244001C) followed by whitespace and a grade
-        // Including A+, A, A-, B+, etc. and I, F, P, N, W
-        const regex = /(24\d{4}[A-Z])\s+([A-D][+-]?|I|F|P|N|W)/g
-        let match
-        const uniqueUpdates = new Set<string>()
-
-        while ((match = regex.exec(text)) !== null) {
-          const indexNumber = match[1]
-          const grade = match[2]
-
-          const student = await prisma.student.findUnique({
-            where: { indexNumber }
-          })
-
-          if (student) {
-            await prisma.courseResult.upsert({
-              where: {
-                studentId_subjectCode: {
-                  studentId: student.id,
-                  subjectCode: data.subjectCode,
-                }
-              },
-              update: { grade, semester: data.semester },
-              create: {
-                studentId: student.id,
-                subjectCode: data.subjectCode,
-                subjectName: data.subjectName,
-                grade,
-                semester: data.semester,
-                credits: 3.0 // Defaulting to 3 credits as per plan
-              }
-            })
-            uniqueUpdates.add(student.id)
+        let actualSubjectCode = data.subjectCode;
+        if (!actualSubjectCode) {
+          const subjMatch = text.match(/([A-Z]{2}\d{4})\s+-/);
+          if (subjMatch) {
+            actualSubjectCode = subjMatch[1];
           }
         }
+
+        if (actualSubjectCode) {
+          const actualSubjectInfo = await prisma.subject.findUnique({ where: { code: actualSubjectCode } }) || subjectInfo;
+          // Match index number (e.g. 244001C or 234250D) followed by whitespace and a grade
+          // Including A+, A, A-, B+, etc. and I, F, P, N, W
+          const regex = /\b(\d{6}[A-Z])\s+([A-D][+-]?|I|F|P|N|W)(?=\s|$)/g
+          let match
+          const uniqueUpdates = new Set<string>()
+
+          while ((match = regex.exec(text)) !== null) {
+            const indexNumber = match[1]
+            const grade = match[2]
+
+            const student = await prisma.student.findUnique({
+              where: { indexNumber }
+            })
+
+            if (student) {
+              await prisma.courseResult.upsert({
+                where: {
+                  studentId_subjectCode: {
+                    studentId: student.id,
+                    subjectCode: actualSubjectCode,
+                  }
+                },
+                update: { grade, semester: actualSubjectInfo?.semester || data.semester },
+                create: {
+                  studentId: student.id,
+                  subjectCode: actualSubjectCode,
+                  subjectName: actualSubjectInfo?.name || data.subjectName,
+                  grade,
+                  semester: actualSubjectInfo?.semester || data.semester,
+                  credits: actualSubjectInfo?.credits || 3.0
+                }
+              })
+              uniqueUpdates.add(student.id)
+            }
+          }
 
         // Recalculate GPA for all affected students
         for (const studentId of uniqueUpdates) {
           await recalculateGpa(studentId)
         }
         console.log(`Parsed PDF and updated ${uniqueUpdates.size} student results.`)
+        } // End if (actualSubjectCode)
       } catch (e) {
         console.error("Failed to parse PDF results:", e)
       }

@@ -16,6 +16,7 @@ model Student {
   profileImage    String?
   degreeProgramme String         // "IT", "ITM", "AI"
   gpa             Float          @default(0.0)
+  totalCredits    Float          @default(0.0)
   batch           String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -45,4 +46,16 @@ model ResultSheet {
   subjectCode String?
   subjectName String?
   uploadedAt  DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  credits   Float
+  semester  String
+  programme String   @default("IT") // "IT", "ITM", "AI" or "All"
+  isNonGpa  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

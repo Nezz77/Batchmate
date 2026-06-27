@@ -252,7 +252,11 @@ export default function StudentModal({ student, onClose, onSave, onDelete }: Stu
                 <span style={{ color: 'var(--text-primary)' }}>{student.batch}</span>
               </div>
               <div className="form-group">
-                <span className="form-label">GPA</span>
+                <span className="form-label">Total Credits</span>
+                <span style={{ color: 'var(--text-primary)' }}>{student.totalCredits || 0} CR</span>
+              </div>
+              <div className="form-group">
+                <span className="form-label">{student.totalCredits < 15 ? 'SGPA (Incomplete)' : 'CGPA'}</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{student.gpa.toFixed(2)}</span>
               </div>
               <div className="form-group">

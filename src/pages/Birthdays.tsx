@@ -163,9 +163,28 @@ export default function Birthdays() {
                           </span>
                         )}
                       </div>
-                      <div className="birthday-name">{student.fullName}</div>
-                      <div className="birthday-programme">
-                        {student.degreeProgramme} · Batch {student.batch}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                        <div className="student-avatar" style={{ width: 42, height: 42, fontSize: 14 }}>
+                          {student.profileImage ? (
+                            <img
+                              src={student.profileImage}
+                              alt={student.fullName}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).parentElement!.textContent = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                              }}
+                            />
+                          ) : (
+                            student.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                          )}
+                        </div>
+                        <div>
+                          <div className="birthday-name" style={{ marginBottom: '2px' }}>{student.fullName}</div>
+                          <div className="birthday-programme" style={{ marginBottom: 0 }}>
+                            {student.degreeProgramme} · Batch {student.batch}
+                          </div>
+                        </div>
                       </div>
                       <div className="birthday-actions">
                         <button
@@ -205,7 +224,19 @@ export default function Birthdays() {
                 background: 'var(--bg-input)', borderRadius: 'var(--radius-md)',
               }}>
                 <div className="student-avatar" style={{ width: 36, height: 36, fontSize: 13 }}>
-                  {selectedStudent.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  {selectedStudent.profileImage ? (
+                    <img
+                      src={selectedStudent.profileImage}
+                      alt={selectedStudent.fullName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).parentElement!.textContent = selectedStudent.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      }}
+                    />
+                  ) : (
+                    selectedStudent.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                  )}
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>

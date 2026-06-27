@@ -3,7 +3,9 @@ import path from 'path'
 import fs from 'fs'
 import { initDatabase, registerDatabaseHandlers, closeDatabase } from './database'
 
-const isDev = !app.isPackaged
+app.setName('Batchmate')
+
+const isDev = !!process.env.VITE_DEV_SERVER_URL
 
 let mainWindow: BrowserWindow | null = null
 
@@ -126,6 +128,14 @@ ipcMain.handle('excel:parse', async (_, filePath: string) => {
 // ── App lifecycle ────────────────────────────────────────────────
 
 app.whenReady().then(async () => {
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(
+      isDev
+        ? path.join(process.cwd(), 'app_icons/batchmate.png')
+        : path.join(process.resourcesPath, 'app_icons/batchmate.png')
+    )
+  }
+
   await initDatabase()
   registerDatabaseHandlers()
   createWindow()

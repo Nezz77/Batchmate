@@ -59,7 +59,19 @@ function UpcomingBirthdayItem({ student }: { student: Student }) {
       borderBottom: '1px solid var(--border)',
     }}>
       <div className="student-avatar" style={{ width: 40, height: 40, fontSize: 14 }}>
-        {student.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+        {student.profileImage ? (
+          <img
+            src={student.profileImage}
+            alt={student.fullName}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).parentElement!.textContent = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+            }}
+          />
+        ) : (
+          student.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        )}
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>

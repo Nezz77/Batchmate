@@ -67,14 +67,20 @@ export default function StudentCard({ student, onClick }: StudentCardProps) {
           <span className="badge badge-batch">Batch {student.batch}</span>
         </div>
 
-        <div className="gpa-indicator">
-          <div className="gpa-bar">
-            <div
-              className={`gpa-bar-fill ${getGpaClass(student.gpa)}`}
-              style={{ width: `${(student.gpa / 4.0) * 100}%` }}
-            />
+        <div className="gpa-container" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span>{student.totalCredits < 15 ? 'SGPA (Incomplete)' : 'CGPA'}</span>
+            <span>{student.totalCredits} CR</span>
           </div>
-          <span className="gpa-value">{student.gpa.toFixed(2)}</span>
+          <div className="gpa-indicator">
+            <div className="gpa-bar">
+              <div
+                className={`gpa-bar-fill ${getGpaClass(student.gpa)}`}
+                style={{ width: `${(student.gpa / 4.0) * 100}%` }}
+              />
+            </div>
+            <span className="gpa-value">{student.gpa.toFixed(2)}</span>
+          </div>
         </div>
       </div>
     </div>
