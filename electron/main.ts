@@ -112,6 +112,28 @@ ipcMain.handle('app:getResultSheetsDir', async () => {
   return dir
 })
 
+const getFlyerConfigPath = () => path.join(app.getPath('userData'), 'flyer_config.json')
+
+ipcMain.handle('app:getFlyerConfig', async () => {
+  try {
+    const p = getFlyerConfigPath()
+    if (fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, 'utf-8'))
+    }
+  } catch (err) {
+    console.error('Failed to read flyer config:', err)
+  }
+  return null
+})
+
+ipcMain.handle('app:saveFlyerConfig', async (_, config: any) => {
+  try {
+    fs.writeFileSync(getFlyerConfigPath(), JSON.stringify(config, null, 2))
+  } catch (err) {
+    console.error('Failed to save flyer config:', err)
+  }
+})
+
 // ── Excel parsing handler ────────────────────────────────────────
 
 ipcMain.handle('excel:parse', async (_, filePath: string) => {

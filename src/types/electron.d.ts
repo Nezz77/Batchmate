@@ -54,6 +54,10 @@ export interface ElectronAPI {
     getResults: (studentId: string) => Promise<CourseResult[]>
     getRank: (studentId: string) => Promise<{ rank: number, total: number, degree: string } | null>
   }
+  app: {
+    getFlyerConfig: () => Promise<FlyerConfig | null>
+    saveFlyerConfig: (config: FlyerConfig) => Promise<void>
+  }
 }
 
 export interface ResultSheet {
@@ -92,4 +96,25 @@ export interface ImportResult {
   errors: number
   errorDetails: string[]
   total: number
+}
+
+export interface CustomText {
+  id: string
+  text: string
+  x: number
+  y: number
+  fontSize: number
+  color: string
+  fontWeight: number
+}
+
+export interface FlyerConfig {
+  useCustomLayout: boolean
+  backgroundImage: string | null
+  photoShape: 'round' | 'square'
+  photoX: number
+  photoY: number
+  photoSize: number
+  customTexts: CustomText[]
+  showDefaultDecorations: boolean
 }

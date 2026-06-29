@@ -111,6 +111,12 @@ const api = {
 
     getResultSheetsDir: () =>
       ipcRenderer.invoke('app:getResultSheetsDir'),
+
+    getFlyerConfig: () =>
+      ipcRenderer.invoke('app:getFlyerConfig'),
+
+    saveFlyerConfig: (config: any) =>
+      ipcRenderer.invoke('app:saveFlyerConfig', config),
   },
 }
 
