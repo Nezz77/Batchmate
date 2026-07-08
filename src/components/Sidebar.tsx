@@ -58,7 +58,7 @@ export default function Sidebar() {
 
       <div className="sidebar-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <ThemeSwitcher />
-        <p className="sidebar-footer-text">Batchmate v1.0.0</p>
+        <p className="sidebar-footer-text">Batchmate v1.0.0<br />Developed By FUTURETech © 2026</p>
       </div>
     </aside>
   )

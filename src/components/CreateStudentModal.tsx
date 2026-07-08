@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, UserPlus } from 'lucide-react'
 import type { Student } from '../types/electron.d'
 
@@ -8,6 +8,7 @@ interface CreateStudentModalProps {
 }
 
 export default function CreateStudentModal({ onClose, onCreate }: CreateStudentModalProps) {
+  const [visible, setVisible] = useState(false)
   const [form, setForm] = useState({
     fullName: '',
     indexNumber: '',
@@ -19,6 +20,15 @@ export default function CreateStudentModal({ onClose, onCreate }: CreateStudentM
     batch: '',
     profileImage: null as string | null
   })
+
+  useEffect(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+  }, [])
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(onClose, 300)
+  }
 
   const handleSave = () => {
     if (!form.fullName || !form.indexNumber || !form.dateOfBirth || !form.batch) {
@@ -38,6 +48,7 @@ export default function CreateStudentModal({ onClose, onCreate }: CreateStudentM
       email: form.email || null,
       degreeProgramme: form.degreeProgramme,
       gpa: Number(form.gpa),
+      totalCredits: form.totalCredits,
       batch: form.batch,
       dateOfBirth: dob,
       profileImage: form.profileImage
@@ -55,19 +66,19 @@ export default function CreateStudentModal({ onClose, onCreate }: CreateStudentM
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
-        <div className="modal-header">
+    <div className={`modal-overlay ${visible ? 'modal-overlay-visible' : ''}`} onClick={handleClose}>
+      <div className={`modal ${visible ? 'modal-visible' : ''}`} onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+        <div className="modal-header" style={{ padding: '28px 28px 0', marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <UserPlus size={20} style={{ color: 'var(--accent-primary)' }} />
             <h2 className="modal-title">Add New Student</h2>
           </div>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-close" onClick={handleClose}>
             <X size={18} />
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="modal-body" style={{ padding: '24px 28px', overflowY: 'auto' }}>
           {/* Photo Upload Section */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
             <div className="student-avatar" style={{ width: 72, height: 72, fontSize: 24, flexShrink: 0 }}>
@@ -172,11 +183,11 @@ export default function CreateStudentModal({ onClose, onCreate }: CreateStudentM
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button className="btn btn-secondary" onClick={handleClose}>
             Cancel
           </button>
           <button className="btn btn-primary" onClick={handleSave}>
-            Save Student
+            <UserPlus size={15} /> Save Student
           </button>
         </div>
       </div>
