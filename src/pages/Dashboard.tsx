@@ -100,7 +100,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    window.api.students.getStats().then(s => {
+    window.api.students.getStats().then((s: any) => {
       setStats(s)
       setLoading(false)
     })

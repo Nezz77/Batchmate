@@ -88,7 +88,7 @@ export default function Import() {
     setDragging(false)
     const files = Array.from(e.dataTransfer.files)
     if (files.length > 0) {
-      handleFile(files[0].path || (files[0] as any).webkitRelativePath || files[0].name)
+      handleFile((files[0] as any).path || (files[0] as any).webkitRelativePath || files[0].name)
     }
   }
 

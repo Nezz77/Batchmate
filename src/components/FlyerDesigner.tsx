@@ -32,6 +32,12 @@ interface TextLayer {
   rotation: number
   visible: boolean
   locked: boolean
+  outlineWidth?: number
+  outlineColor?: string
+  shadowBlur?: number
+  shadowColor?: string
+  shadowOffsetX?: number
+  shadowOffsetY?: number
 }
 
 interface PhotoLayer {
@@ -73,7 +79,22 @@ interface BackgroundLayer {
   locked: boolean
 }
 
-type Layer = TextLayer | PhotoLayer | BackgroundLayer
+interface ImageLayer {
+  type: 'image'
+  id: string
+  name: string
+  image: string
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+  opacity: number
+  visible: boolean
+  locked: boolean
+}
+
+type Layer = TextLayer | PhotoLayer | BackgroundLayer | ImageLayer
 
 interface EditorState {
   layers: Layer[]
@@ -101,6 +122,8 @@ const EXPORT_PRESETS = [
 const FONTS = [
   'Inter', 'Arial', 'Georgia', 'Courier New', 'Trebuchet MS',
   'Verdana', 'Palatino', 'Impact', 'Comic Sans MS',
+  'Montserrat', 'Poppins', 'Oswald', 'Playfair Display',
+  'Fredoka One', 'Lobster', 'Pacifico', 'Bangers', 'Cabin Sketch'
 ]
 
 // ── Defaults ─────────────────────────────────────────────────────
@@ -111,26 +134,26 @@ function createDefaultLayers(student: Student): Layer[] {
       type: 'background',
       id: 'bg',
       name: 'Background',
-      image: null,
+      image: '/TemplateFIT.png',
       color: '#0F172A',
       visible: true,
-      locked: false,
+      locked: true,
     },
     {
       type: 'photo',
       id: 'photo',
       name: 'Student Photo',
-      x: 250,
-      y: 210,
-      width: 160,
-      height: 160,
+      x: 251,
+      y: 186,
+      width: 175,
+      height: 175,
       rotation: 0,
       flipX: false,
       flipY: false,
-      shape: 'circle',
-      borderWidth: 3,
-      borderColor: 'rgba(255,255,255,0.2)',
-      shadow: true,
+      shape: 'square',
+      borderWidth: 0,
+      borderColor: 'transparent',
+      shadow: false,
       opacity: 1,
       imgOffsetX: 0,
       imgOffsetY: 0,
@@ -143,23 +166,16 @@ function createDefaultLayers(student: Student): Layer[] {
       locked: false,
     },
     {
-      type: 'text',
-      id: 'title',
-      name: 'Title',
-      text: '🎂 Happy Birthday 🎂',
-      x: 250,
-      y: 45,
-      fontSize: 14,
-      fontFamily: 'Inter',
-      fontWeight: 700,
-      italic: false,
-      underline: false,
-      color: 'rgba(255,255,255,0.5)',
-      opacity: 1,
-      letterSpacing: 3,
-      lineHeight: 1.4,
-      textAlign: 'center',
+      type: 'image',
+      id: 'insta_frame',
+      name: 'Instagram Frame Overlay',
+      image: '/fit_frame.png',
+      x: 244,
+      y: 209,
+      width: 210,
+      height: 245,
       rotation: 0,
+      opacity: 1,
       visible: true,
       locked: false,
     },
@@ -167,37 +183,39 @@ function createDefaultLayers(student: Student): Layer[] {
       type: 'text',
       id: 'name',
       name: 'Student Name',
-      text: student.fullName,
+      text: '{name}',
       x: 250,
-      y: 85,
-      fontSize: 28,
-      fontFamily: 'Inter',
+      y: 345,
+      fontSize: 22,
+      fontFamily: 'Fredoka One',
       fontWeight: 800,
       italic: false,
       underline: false,
-      color: '#93C5FD',
+      color: '#ffffff',
       opacity: 1,
-      letterSpacing: -0.5,
+      letterSpacing: 0,
       lineHeight: 1.2,
       textAlign: 'center',
       rotation: 0,
       visible: true,
       locked: false,
+      outlineWidth: 3,
+      outlineColor: '#000000',
+      shadowBlur: 8,
+      shadowColor: 'rgba(0,0,0,0.6)',
+      shadowOffsetX: 0,
+      shadowOffsetY: 4,
     },
     {
       type: 'text',
       id: 'date',
       name: 'Birthday Date',
-      text: (() => {
-        const mn = ['January','February','March','April','May','June','July','August','September','October','November','December']
-        const d = new Date(student.dateOfBirth)
-        return `${mn[d.getMonth()]} ${d.getDate()}`
-      })(),
+      text: '{date}',
       x: 250,
-      y: 340,
-      fontSize: 22,
-      fontFamily: 'Inter',
-      fontWeight: 700,
+      y: 378,
+      fontSize: 13,
+      fontFamily: 'Montserrat',
+      fontWeight: 800,
       italic: false,
       underline: false,
       color: '#F59E0B',
@@ -208,28 +226,13 @@ function createDefaultLayers(student: Student): Layer[] {
       rotation: 0,
       visible: true,
       locked: false,
-    },
-    {
-      type: 'text',
-      id: 'programme',
-      name: 'Programme',
-      text: `${student.degreeProgramme} — Batch ${student.batch}`,
-      x: 250,
-      y: 375,
-      fontSize: 13,
-      fontFamily: 'Inter',
-      fontWeight: 500,
-      italic: false,
-      underline: false,
-      color: 'rgba(255,255,255,0.5)',
-      opacity: 1,
-      letterSpacing: 0,
-      lineHeight: 1.4,
-      textAlign: 'center',
-      rotation: 0,
-      visible: true,
-      locked: false,
-    },
+      outlineWidth: 2,
+      outlineColor: '#000000',
+      shadowBlur: 4,
+      shadowColor: 'rgba(0,0,0,0.5)',
+      shadowOffsetX: 0,
+      shadowOffsetY: 2,
+    }
   ]
 }
 
@@ -237,10 +240,12 @@ function createDefaultLayers(student: Student): Layer[] {
 
 interface FlyerDesignerProps {
   student: Student
+  students?: Student[]
+  onSwitchStudent?: (student: Student) => void
   onClose: () => void
 }
 
-export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) {
+export default function FlyerDesigner({ student, students, onSwitchStudent, onClose }: FlyerDesignerProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<EditorState>({
     layers: createDefaultLayers(student),
@@ -258,6 +263,33 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
   const [exportQuality, setExportQuality] = useState(90)
   const [toast, setToast] = useState<string | null>(null)
   const [editingImageInMask, setEditingImageInMask] = useState(false)
+
+  // Load saved configuration on mount
+  useEffect(() => {
+    // Inject Google Fonts
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?family=Fredoka+One&family=Montserrat:wght@400;700;800&family=Poppins:wght@400;600;800&family=Lobster&family=Pacifico&family=Oswald:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Bangers&family=Cabin+Sketch&display=swap'
+    document.head.appendChild(link)
+
+    window.api.app.getFlyerConfig().then((saved: any) => {
+      if (saved && saved._designerState && saved._designerState.layers) {
+        setState({
+          layers: saved._designerState.layers,
+          canvasWidth: saved._designerState.canvasWidth || 500,
+          canvasHeight: saved._designerState.canvasHeight || 500,
+          zoom: 0.75,
+          selectedLayerId: null,
+        })
+        setHistory([{ layers: JSON.parse(JSON.stringify(saved._designerState.layers)) }])
+        setHistoryIdx(0)
+      }
+    }).catch(console.error)
+
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
 
   // ── History helpers ───────────────────────────────────────────
 
@@ -324,19 +356,35 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
+        const bgLayer = state.layers.find(l => l.type === 'background') as BackgroundLayer | undefined;
+        const photoLayer = state.layers.find(l => l.type === 'photo') as PhotoLayer | undefined;
+        const textLayers = state.layers.filter(l => l.type === 'text') as TextLayer[];
+
         window.api.app.saveFlyerConfig({
           useCustomLayout: true,
-          backgroundImage: null,
-          photoShape: 'round',
-          photoX: 0, photoY: 0, photoSize: 0,
-          customTexts: [],
+          backgroundImage: bgLayer?.image || null,
+          photoShape: (photoLayer?.shape === 'circle' || photoLayer?.shape === 'oval') ? 'round' : 'square',
+          photoX: photoLayer ? photoLayer.x : 0,
+          photoY: photoLayer ? photoLayer.y : 0,
+          photoSize: photoLayer ? photoLayer.width : 0,
+          customTexts: textLayers.map(l => ({
+            id: l.id,
+            text: l.text,
+            x: l.x,
+            y: l.y,
+            fontSize: l.fontSize,
+            color: l.color,
+            fontWeight: l.fontWeight
+          })),
           showDefaultDecorations: false,
           _designerState: { layers: state.layers, canvasWidth: state.canvasWidth, canvasHeight: state.canvasHeight }
         } as any)
-      } catch { /* ignore */ }
+      } catch (err) {
+        console.error('Failed to auto-save config:', err)
+      }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [state.layers])
+  }, [state.layers, state.canvasWidth, state.canvasHeight])
 
   // ── Toast ──────────────────────────────────────────────────────
 
@@ -349,6 +397,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
 
   const handleCanvasMouseDown = (layerId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+    e.preventDefault()
     const layer = state.layers.find(l => l.id === layerId)
     if (!layer || layer.locked || layer.type === 'background') return
     setState(prev => ({ ...prev, selectedLayerId: layerId }))
@@ -413,18 +462,53 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
 
   const handleResize = (layerId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const layer = state.layers.find(l => l.id === layerId) as PhotoLayer
+    e.preventDefault()
+    const layer = state.layers.find(l => l.id === layerId) as PhotoLayer | ImageLayer | undefined
     if (!layer) return
 
     const startX = e.clientX
+    const startY = e.clientY
     const origW = layer.width
     const origH = layer.height
 
     const onMove = (me: MouseEvent) => {
       const dx = (me.clientX - startX) / state.zoom
-      const newW = Math.max(30, origW + dx)
-      const newH = Math.max(30, origH + dx * (origH / origW))
+      const dy = (me.clientY - startY) / state.zoom
+      
+      const newW = Math.max(20, origW + dx)
+      const newH = me.shiftKey
+        ? Math.max(20, origH + dy)
+        : Math.max(20, origH + dx * (origH / origW))
       updateLayer(layerId, { width: newW, height: newH })
+    }
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      commitLayer()
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  const handleEdgeResize = (layerId: string, edge: 'right' | 'bottom', e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    const layer = state.layers.find(l => l.id === layerId) as PhotoLayer | ImageLayer | undefined
+    if (!layer) return
+
+    const startX = e.clientX
+    const startY = e.clientY
+    const origW = layer.width
+    const origH = layer.height
+
+    const onMove = (me: MouseEvent) => {
+      if (edge === 'right') {
+        const dx = (me.clientX - startX) / state.zoom
+        updateLayer(layerId, { width: Math.max(20, origW + dx) })
+      } else if (edge === 'bottom') {
+        const dy = (me.clientY - startY) / state.zoom
+        updateLayer(layerId, { height: Math.max(20, origH + dy) })
+      }
     }
     const onUp = () => {
       window.removeEventListener('mousemove', onMove)
@@ -498,6 +582,30 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
       lineHeight: 1.4,
       textAlign: 'center',
       rotation: 0,
+      visible: true,
+      locked: false,
+    }
+    updateLayers([...state.layers, newLayer])
+    setState(prev => ({ ...prev, selectedLayerId: newLayer.id }))
+    setActiveTab('properties')
+  }
+
+  // ── Add image layer ────────────────────────────────────────────
+
+  const addImageLayer = async () => {
+    const p = await window.api.dialog.openFile({ filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg'] }] })
+    if (!p) return
+    const newLayer: ImageLayer = {
+      type: 'image',
+      id: `image-${Date.now()}`,
+      name: `Image ${state.layers.filter(l => l.type === 'image').length + 1}`,
+      image: `file://${p}`,
+      x: 250,
+      y: 250,
+      width: 150,
+      height: 150,
+      rotation: 0,
+      opacity: 1,
       visible: true,
       locked: false,
     }
@@ -614,7 +722,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
 
   // ── Canvas rendering ──────────────────────────────────────────
 
-  const renderLayer = (layer: Layer) => {
+  const renderLayer = (layer: Layer, idx: number) => {
     if (!layer.visible) return null
 
     if (layer.type === 'background') {
@@ -649,7 +757,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
             transform: `rotate(${p.rotation}deg)`,
             opacity: p.opacity,
             cursor: p.locked ? 'default' : (editingImageInMask && isSelected ? 'crosshair' : 'move'),
-            zIndex: state.layers.indexOf(layer),
+            zIndex: idx,
           }}
           onMouseDown={(e) => {
             if (p.locked) return
@@ -672,24 +780,31 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
             boxShadow: p.shadow ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
             background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative',
           }}>
-            {student.profileImage ? (
+            {/* Initials (always rendered behind image) */}
+            <span style={{ position: 'absolute', fontSize: `${p.width * 0.3}px`, fontWeight: 800, color: 'rgba(255,255,255,0.8)', userSelect: 'none' }}>
+              {student.fullName.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+            </span>
+
+            {/* Student Image */}
+            {student.profileImage && (
               <img
                 src={student.profileImage}
                 alt={student.fullName}
                 draggable={false}
                 style={{
+                  position: 'absolute', inset: 0,
                   width: '100%', height: '100%', objectFit: 'cover',
                   transform: `translate(${p.imgOffsetX}px, ${p.imgOffsetY}px) scale(${p.imgScale}) scaleX(${p.flipX ? -1 : 1}) scaleY(${p.flipY ? -1 : 1})`,
                   filter: filterStr,
                   pointerEvents: 'none',
                 }}
                 crossOrigin="anonymous"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
-            ) : (
-              <span style={{ fontSize: 48, fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>
-                {student.fullName.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
-              </span>
             )}
           </div>
 
@@ -702,14 +817,119 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
                 borderRadius: p.shape === 'circle' || p.shape === 'oval' ? '50%' : p.shape === 'rounded-rect' ? 18 : 2,
                 pointerEvents: 'none',
               }} />
+              {/* Corner Resize Handle */}
               <div
                 style={{
                   position: 'absolute', right: -6, bottom: -6,
                   width: 12, height: 12, borderRadius: 2,
                   background: 'var(--accent-primary)', cursor: 'nwse-resize',
                   border: '2px solid white',
+                  zIndex: 10,
                 }}
                 onMouseDown={(e) => handleResize(p.id, e)}
+              />
+              {/* Right Edge Resize Handle */}
+              <div
+                style={{
+                  position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)',
+                  width: 8, height: 16, borderRadius: 2,
+                  background: 'var(--accent-primary)', cursor: 'e-resize',
+                  border: '1.5px solid white',
+                  zIndex: 10,
+                }}
+                onMouseDown={(e) => handleEdgeResize(p.id, 'right', e)}
+              />
+              {/* Bottom Edge Resize Handle */}
+              <div
+                style={{
+                  position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)',
+                  width: 16, height: 8, borderRadius: 2,
+                  background: 'var(--accent-primary)', cursor: 's-resize',
+                  border: '1.5px solid white',
+                  zIndex: 10,
+                }}
+                onMouseDown={(e) => handleEdgeResize(p.id, 'bottom', e)}
+              />
+            </>
+          )}
+        </div>
+      )
+    }
+
+    if (layer.type === 'image') {
+      const imgLayer = layer as ImageLayer
+      const isSelected = state.selectedLayerId === imgLayer.id
+
+      return (
+        <div
+          key={imgLayer.id}
+          style={{
+            position: 'absolute',
+            left: imgLayer.x - imgLayer.width / 2,
+            top: imgLayer.y - imgLayer.height / 2,
+            width: imgLayer.width,
+            height: imgLayer.height,
+            transform: `rotate(${imgLayer.rotation}deg)`,
+            opacity: imgLayer.opacity,
+            cursor: imgLayer.locked ? 'default' : 'move',
+            zIndex: idx,
+          }}
+          onMouseDown={(e) => {
+            if (!imgLayer.locked) handleCanvasMouseDown(imgLayer.id, e)
+            else { e.stopPropagation(); setState(prev => ({ ...prev, selectedLayerId: imgLayer.id })) }
+          }}
+        >
+          <img
+            src={imgLayer.image}
+            alt={imgLayer.name}
+            draggable={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'fill',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {isSelected && (
+            <>
+              <div style={{
+                position: 'absolute', inset: -2,
+                border: '2px solid var(--accent-primary)',
+                pointerEvents: 'none',
+              }} />
+              {/* Corner Resize Handle */}
+              <div
+                style={{
+                  position: 'absolute', right: -6, bottom: -6,
+                  width: 12, height: 12, borderRadius: 2,
+                  background: 'var(--accent-primary)', cursor: 'nwse-resize',
+                  border: '2px solid white',
+                  zIndex: 10,
+                }}
+                onMouseDown={(e) => handleResize(imgLayer.id, e)}
+              />
+              {/* Right Edge Resize Handle */}
+              <div
+                style={{
+                  position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)',
+                  width: 8, height: 16, borderRadius: 2,
+                  background: 'var(--accent-primary)', cursor: 'e-resize',
+                  border: '1.5px solid white',
+                  zIndex: 10,
+                }}
+                onMouseDown={(e) => handleEdgeResize(imgLayer.id, 'right', e)}
+              />
+              {/* Bottom Edge Resize Handle */}
+              <div
+                style={{
+                  position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)',
+                  width: 16, height: 8, borderRadius: 2,
+                  background: 'var(--accent-primary)', cursor: 's-resize',
+                  border: '1.5px solid white',
+                  zIndex: 10,
+                }}
+                onMouseDown={(e) => handleEdgeResize(imgLayer.id, 'bottom', e)}
               />
             </>
           )}
@@ -720,6 +940,31 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
     if (layer.type === 'text') {
       const t = layer as TextLayer
       const isSelected = state.selectedLayerId === t.id
+
+      // Compile text outline and drop shadow styles
+      const shadowParts = []
+      if (t.outlineWidth && t.outlineWidth > 0) {
+        const w = t.outlineWidth
+        const c = t.outlineColor || '#000000'
+        shadowParts.push(
+          `${w}px 0px 0 ${c}`,
+          `-${w}px 0px 0 ${c}`,
+          `0px ${w}px 0 ${c}`,
+          `0px -${w}px 0 ${c}`,
+          `${w}px ${w}px 0 ${c}`,
+          `-${w}px -${w}px 0 ${c}`,
+          `${w}px -${w}px 0 ${c}`,
+          `-${w}px ${w}px 0 ${c}`
+        )
+      }
+      if (t.shadowBlur && t.shadowBlur > 0) {
+        const ox = t.shadowOffsetX || 0
+        const oy = t.shadowOffsetY || 2
+        const b = t.shadowBlur
+        const c = t.shadowColor || 'rgba(0,0,0,0.5)'
+        shadowParts.push(`${ox}px ${oy}px ${b}px ${c}`)
+      }
+      const textShadowValue = shadowParts.length > 0 ? shadowParts.join(', ') : 'none'
 
       return (
         <div
@@ -741,16 +986,29 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
             whiteSpace: 'pre-wrap',
             cursor: t.locked ? 'default' : 'move',
             userSelect: 'none',
-            zIndex: state.layers.indexOf(layer),
+            zIndex: idx,
             outline: isSelected ? '2px dashed var(--accent-primary)' : 'none',
             outlineOffset: 4,
+            textShadow: textShadowValue,
           }}
           onMouseDown={(e) => {
             if (!t.locked) handleCanvasMouseDown(t.id, e)
             else { e.stopPropagation(); setState(prev => ({ ...prev, selectedLayerId: t.id })) }
           }}
         >
-          {t.text}
+          {(() => {
+            let textValue = t.text
+            textValue = textValue.replace(/{name}/g, student.fullName)
+            textValue = textValue.replace(/{firstName}/g, student.fullName.split(' ')[0])
+            textValue = textValue.replace(/{date}/g, (() => {
+              const mn = ['January','February','March','April','May','June','July','August','September','October','November','December']
+              const d = new Date(student.dateOfBirth)
+              return `${mn[d.getMonth()]} ${d.getDate()}`
+            })())
+            textValue = textValue.replace(/{programme}/g, student.degreeProgramme)
+            textValue = textValue.replace(/{batch}/g, student.batch)
+            return textValue
+          })()}
         </div>
       )
     }
@@ -794,6 +1052,376 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <label style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>Color (when no image)</label>
               <ColorSwatch value={bg.color} onChange={v => updateLayer(bg.id, { color: v })} />
+            </div>
+          </PropGroup>
+
+          <PropGroup label="Template Presets">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '6px 10px', height: 'auto' }}
+                onClick={() => {
+                  const newLayers = createDefaultLayers(student)
+                  updateLayers(newLayers)
+                  setState(prev => ({ ...prev, canvasWidth: 500, canvasHeight: 500 }))
+                  showToast('Default gradient layout applied!')
+                }}
+              >
+                🌈 Default Gradient Layout
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '6px 10px', height: 'auto' }}
+                onClick={() => {
+                  const fitLayers: Layer[] = [
+                    {
+                      type: 'background',
+                      id: 'bg',
+                      name: 'Background',
+                      image: '/TemplateFIT.png',
+                      color: '#0F172A',
+                      visible: true,
+                      locked: true,
+                    },
+                    {
+                      type: 'photo',
+                      id: 'photo',
+                      name: 'Student Photo',
+                      x: 251,
+                      y: 186,
+                      width: 175,
+                      height: 175,
+                      rotation: 0,
+                      flipX: false,
+                      flipY: false,
+                      shape: 'square',
+                      borderWidth: 0,
+                      borderColor: 'transparent',
+                      shadow: false,
+                      opacity: 1,
+                      imgOffsetX: 0,
+                      imgOffsetY: 0,
+                      imgScale: 1,
+                      brightness: 100,
+                      contrast: 100,
+                      saturate: 100,
+                      blur: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'insta_frame',
+                      name: 'Instagram Frame Overlay',
+                      image: '/fit_frame.png',
+                      x: 244,
+                      y: 209,
+                      width: 210,
+                      height: 245,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'text',
+                      id: 'name',
+                      name: 'Student Name',
+                      text: '{name}',
+                      x: 250,
+                      y: 345,
+                      fontSize: 22,
+                      fontFamily: 'Fredoka One',
+                      fontWeight: 800,
+                      italic: false,
+                      underline: false,
+                      color: '#ffffff',
+                      opacity: 1,
+                      letterSpacing: 0,
+                      lineHeight: 1.2,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                      outlineWidth: 3,
+                      outlineColor: '#000000',
+                      shadowBlur: 8,
+                      shadowColor: 'rgba(0,0,0,0.6)',
+                      shadowOffsetX: 0,
+                      shadowOffsetY: 4,
+                    },
+                    {
+                      type: 'text',
+                      id: 'date',
+                      name: 'Birthday Date',
+                      text: '{date}',
+                      x: 250,
+                      y: 378,
+                      fontSize: 13,
+                      fontFamily: 'Montserrat',
+                      fontWeight: 800,
+                      italic: false,
+                      underline: false,
+                      color: '#F59E0B',
+                      opacity: 1,
+                      letterSpacing: 0,
+                      lineHeight: 1.4,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                      outlineWidth: 2,
+                      outlineColor: '#000000',
+                      shadowBlur: 4,
+                      shadowColor: 'rgba(0,0,0,0.5)',
+                      shadowOffsetX: 0,
+                      shadowOffsetY: 2,
+                    }
+                  ]
+                  updateLayers(fitLayers)
+                  setState(prev => ({ ...prev, canvasWidth: 500, canvasHeight: 500 }))
+                  showToast('FIT template preset applied!')
+                }}
+              >
+                🎓 FIT Birthday Flyer (Instagram Style)
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ textAlign: 'left', justifyContent: 'flex-start', padding: '6px 10px', height: 'auto' }}
+                onClick={() => {
+                  const fitLayersRebuilt: Layer[] = [
+                    {
+                      type: 'background',
+                      id: 'bg',
+                      name: 'Background Color',
+                      image: null,
+                      color: '#0c050a',
+                      visible: true,
+                      locked: true,
+                    },
+                    {
+                      type: 'image',
+                      id: 'bg_overlay',
+                      name: 'Background Elements',
+                      image: '/fit_bg_overlay.png',
+                      x: 250,
+                      y: 250,
+                      width: 500,
+                      height: 500,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: true,
+                    },
+                    {
+                      type: 'photo',
+                      id: 'photo',
+                      name: 'Student Photo',
+                      x: 251,
+                      y: 186,
+                      width: 175,
+                      height: 175,
+                      rotation: 0,
+                      flipX: false,
+                      flipY: false,
+                      shape: 'square',
+                      borderWidth: 0,
+                      borderColor: 'transparent',
+                      shadow: false,
+                      opacity: 1,
+                      imgOffsetX: 0,
+                      imgOffsetY: 0,
+                      imgScale: 1,
+                      brightness: 100,
+                      contrast: 100,
+                      saturate: 100,
+                      blur: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'insta_frame',
+                      name: 'Instagram Frame',
+                      image: '/fit_frame.png',
+                      x: 244,
+                      y: 209,
+                      width: 210,
+                      height: 245,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'balloons_left',
+                      name: 'Balloons Left',
+                      image: '/fit_balloons_left.png',
+                      x: 67,
+                      y: 240,
+                      width: 134,
+                      height: 240,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'balloons_right',
+                      name: 'Balloons Right',
+                      image: '/fit_balloons_right.png',
+                      x: 435,
+                      y: 215,
+                      width: 129,
+                      height: 273,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'happy_birthday',
+                      name: 'Happy Birthday Title',
+                      image: '/fit_happy_birthday.png',
+                      x: 243,
+                      y: 54,
+                      width: 273,
+                      height: 104,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'image',
+                      id: 'confetti',
+                      name: 'Confetti & Ribbons',
+                      image: '/fit_confetti.png',
+                      x: 250,
+                      y: 250,
+                      width: 500,
+                      height: 500,
+                      rotation: 0,
+                      opacity: 1,
+                      visible: true,
+                      locked: true,
+                    },
+                    {
+                      type: 'text',
+                      id: 'name',
+                      name: 'Student Name',
+                      text: '{name}',
+                      x: 250,
+                      y: 332,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: 800,
+                      italic: false,
+                      underline: false,
+                      color: '#93C5FD',
+                      opacity: 1,
+                      letterSpacing: 0,
+                      lineHeight: 1.2,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'text',
+                      id: 'date',
+                      name: 'Birthday Date',
+                      text: '{date}',
+                      x: 250,
+                      y: 354,
+                      fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: 700,
+                      italic: false,
+                      underline: false,
+                      color: '#F59E0B',
+                      opacity: 1,
+                      letterSpacing: 0,
+                      lineHeight: 1.4,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'text',
+                      id: 'fit-message',
+                      name: 'Birthday Message',
+                      text: "Happy birthday to our wonderful batchmate! Hope your day\nis filled with smiles, good vibes, and moments you'll always\nremember. Wishing you success and a bright journey ahead!",
+                      x: 250,
+                      y: 382,
+                      fontSize: 8.5,
+                      fontFamily: 'Inter',
+                      fontWeight: 500,
+                      italic: true,
+                      underline: false,
+                      color: '#ffffff',
+                      opacity: 0.95,
+                      letterSpacing: 0,
+                      lineHeight: 1.3,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'text',
+                      id: 'programme',
+                      name: 'Programme',
+                      text: '{programme} — Batch {batch}',
+                      x: 250,
+                      y: 442,
+                      fontSize: 9.5,
+                      fontFamily: 'Inter',
+                      fontWeight: 600,
+                      italic: false,
+                      underline: false,
+                      color: '#93C5FD',
+                      opacity: 1,
+                      letterSpacing: 0,
+                      lineHeight: 1.3,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                    },
+                    {
+                      type: 'text',
+                      id: 'fit-footer',
+                      name: 'Footer Credits',
+                      text: "Faculty of Information Technology  |  University of Moratuwa",
+                      x: 250,
+                      y: 468,
+                      fontSize: 7.5,
+                      fontFamily: 'Inter',
+                      fontWeight: 500,
+                      italic: false,
+                      underline: false,
+                      color: 'rgba(255,255,255,0.4)',
+                      opacity: 1,
+                      letterSpacing: 1.2,
+                      lineHeight: 1.3,
+                      textAlign: 'center',
+                      rotation: 0,
+                      visible: true,
+                      locked: false,
+                    }
+                  ]
+                  updateLayers(fitLayersRebuilt)
+                  setState(prev => ({ ...prev, canvasWidth: 500, canvasHeight: 500 }))
+                  showToast('FIT Layer-by-Layer preset applied!')
+                }}
+              >
+                🎓 FIT Rebuilt (Layer-by-Layer)
+              </button>
             </div>
           </PropGroup>
         </div>
@@ -884,6 +1512,47 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
       )
     }
 
+    if (selectedLayer.type === 'image') {
+      const imgLayer = selectedLayer as ImageLayer
+      return (
+        <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', maxHeight: 'calc(100vh - 320px)' }}>
+          <PropGroup label="Position & Size">
+            <PropRow>
+              <PropField label="X" value={Math.round(imgLayer.x)} onChange={v => updateLayer(imgLayer.id, { x: v })} />
+              <PropField label="Y" value={Math.round(imgLayer.y)} onChange={v => updateLayer(imgLayer.id, { y: v })} />
+              <PropField label="W" value={Math.round(imgLayer.width)} onChange={v => updateLayer(imgLayer.id, { width: v })} min={20} />
+              <PropField label="H" value={Math.round(imgLayer.height)} onChange={v => updateLayer(imgLayer.id, { height: v })} min={20} />
+            </PropRow>
+          </PropGroup>
+
+          <PropGroup label="Transform">
+            <PropRow>
+              <PropField label="Rotation" value={imgLayer.rotation} onChange={v => updateLayer(imgLayer.id, { rotation: v })} min={-360} max={360} />
+              <PropField label="Opacity" value={imgLayer.opacity} onChange={v => updateLayer(imgLayer.id, { opacity: v })} min={0} max={1} step={0.05} />
+            </PropRow>
+          </PropGroup>
+
+          <PropGroup label="Image Source">
+            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ flex: 1 }}
+                onClick={async () => {
+                  const p = await window.api.dialog.openFile({ filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg'] }] })
+                  if (p) { updateLayer(imgLayer.id, { image: `file://${p}` }); commitLayer() }
+                }}
+              >
+                <Upload size={12} style={{ marginRight: 4 }} /> Replace Image
+              </button>
+            </div>
+            <div style={{ fontSize: 9, color: 'var(--text-tertiary)', wordBreak: 'break-all' }}>
+              {imgLayer.image}
+            </div>
+          </PropGroup>
+        </div>
+      )
+    }
+
     if (selectedLayer.type === 'text') {
       const t = selectedLayer as TextLayer
       return (
@@ -940,6 +1609,32 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
             <ColorSwatch value={t.color} onChange={v => updateLayer(t.id, { color: v })} />
           </PropGroup>
 
+          <PropGroup label="Text Outline">
+            <PropRow>
+              <PropField label="Thickness" value={t.outlineWidth || 0} onChange={v => updateLayer(t.id, { outlineWidth: v })} min={0} max={15} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <label style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>Color</label>
+                <ColorSwatch value={t.outlineColor || '#000000'} onChange={v => updateLayer(t.id, { outlineColor: v })} />
+              </div>
+            </PropRow>
+          </PropGroup>
+
+          <PropGroup label="Text Drop Shadow">
+            <PropRow>
+              <PropField label="Shadow Blur" value={t.shadowBlur || 0} onChange={v => updateLayer(t.id, { shadowBlur: v })} min={0} max={25} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <label style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>Shadow Color</label>
+                <ColorSwatch value={t.shadowColor || 'rgba(0,0,0,0.5)'} onChange={v => updateLayer(t.id, { shadowColor: v })} />
+              </div>
+            </PropRow>
+            <div style={{ marginTop: 6 }}>
+              <PropRow>
+                <PropField label="Offset X" value={t.shadowOffsetX || 0} onChange={v => updateLayer(t.id, { shadowOffsetX: v })} min={-20} max={20} />
+                <PropField label="Offset Y" value={t.shadowOffsetY || 2} onChange={v => updateLayer(t.id, { shadowOffsetY: v })} min={-20} max={20} />
+              </PropRow>
+            </div>
+          </PropGroup>
+
           <PropGroup label="Position">
             <PropRow>
               <PropField label="X" value={Math.round(t.x)} onChange={v => updateLayer(t.id, { x: v })} />
@@ -988,7 +1683,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
         // @ts-ignore — Electron drag region
         WebkitAppRegion: 'drag',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, WebkitAppRegion: 'no-drag' as any }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, WebkitAppRegion: 'no-drag' } as any}>
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
             Flyer Designer
           </span>
@@ -997,7 +1692,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, WebkitAppRegion: 'no-drag' as any }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, WebkitAppRegion: 'no-drag' } as any}>
           <button className="btn btn-ghost btn-sm" onClick={undo} disabled={historyIdx <= 0} title="Undo (⌘Z)">
             <Undo2 size={14} />
           </button>
@@ -1065,6 +1760,62 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
           }} label="Upload Template" />
         </div>
 
+        {/* ── Student Switcher Sidebar ─────────────────────────────── */}
+        {students && students.length > 0 && (
+          <div style={{
+            width: 190, display: 'flex', flexDirection: 'column',
+            background: 'rgba(0,0,0,0.15)', borderRight: '1px solid var(--border)',
+            flexShrink: 0, overflow: 'hidden',
+          }}>
+            <div style={{ padding: '12px 10px 8px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>
+              Birthdays switching ({students.length})
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {students.map(s => {
+                const isActive = s.id === student.id
+                const dob = new Date(s.dateOfBirth)
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => onSwitchStudent && onSwitchStudent(s)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '6px 8px', borderRadius: 'var(--radius-md)',
+                      background: isActive ? 'var(--accent-muted)' : 'transparent',
+                      border: `1px solid ${isActive ? 'var(--accent-primary)' : 'transparent'}`,
+                      cursor: 'pointer', transition: 'all 120ms ease',
+                    }}
+                  >
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      overflow: 'hidden', background: 'var(--accent-muted)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, fontWeight: 700, flexShrink: 0,
+                    }}>
+                      {s.profileImage ? (
+                        <img src={s.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        s.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 11, fontWeight: 600, color: 'var(--text-primary)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {s.fullName}
+                      </div>
+                      <div style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>
+                        {dob.getDate()} {dob.toLocaleString('default', { month: 'short' })}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ── Canvas Area ────────────────────────────────────────── */}
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1126,9 +1877,14 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     {state.layers.length} layers
                   </span>
-                  <button className="btn btn-secondary btn-sm" style={{ padding: '2px 8px', fontSize: 10 }} onClick={addTextLayer}>
-                    <Plus size={10} style={{ marginRight: 2 }} /> Add Text
-                  </button>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button className="btn btn-secondary btn-sm" style={{ padding: '2px 6px', fontSize: 9 }} onClick={addTextLayer}>
+                      <Plus size={10} style={{ marginRight: 2 }} /> Text
+                    </button>
+                    <button className="btn btn-secondary btn-sm" style={{ padding: '2px 6px', fontSize: 9 }} onClick={addImageLayer}>
+                      <Plus size={10} style={{ marginRight: 2 }} /> Image
+                    </button>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: 2 }}>
                   {state.layers.map((layer) => (
@@ -1145,7 +1901,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
                     >
                       {/* Layer icon */}
                       <span style={{ fontSize: 12, width: 16, textAlign: 'center', flexShrink: 0 }}>
-                        {layer.type === 'background' ? '🖼' : layer.type === 'photo' ? '👤' : '✏️'}
+                        {layer.type === 'background' ? '🖼' : layer.type === 'photo' ? '👤' : layer.type === 'image' ? '🖼' : '✏️'}
                       </span>
 
                       {/* Layer name */}
@@ -1199,7 +1955,7 @@ export default function FlyerDesigner({ student, onClose }: FlyerDesignerProps) 
                             </button>
                           </>
                         )}
-                        {layer.type === 'text' && layer.id !== 'name' && (
+                        {(layer.type === 'text' || layer.type === 'image') && layer.id !== 'name' && (
                           <button
                             style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: 2, display: 'flex' }}
                             onClick={(e) => {

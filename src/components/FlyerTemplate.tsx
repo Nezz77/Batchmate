@@ -91,6 +91,204 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
   const isCustom = config ? config.useCustomLayout : false
   const showDefaultDecorations = config ? config.showDefaultDecorations : true
 
+  const designerState = (config as any)?._designerState
+  const hasDesignerState = !!(designerState && designerState.layers && designerState.layers.length > 0)
+
+  if (hasDesignerState) {
+    const bgLayer = designerState.layers.find((l: any) => l.type === 'background')
+    const bgStyle = bgLayer && bgLayer.visible
+      ? bgLayer.image
+        ? { background: `url(${bgLayer.image}) center/cover no-repeat` }
+        : { backgroundColor: bgLayer.color }
+      : { background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 40%, #312E81 70%, #1E1B4B 100%)' }
+
+    return (
+      <div
+        ref={ref}
+        style={{
+          width: `${designerState.canvasWidth || 500}px`,
+          height: `${designerState.canvasHeight || 500}px`,
+          position: 'relative',
+          overflow: 'hidden',
+          fontFamily: "'Inter', sans-serif",
+          color: 'white',
+          border: isEditing ? '2px dashed rgba(255,255,255,0.5)' : 'none',
+          borderRadius: '20px',
+          ...bgStyle
+        }}
+      >
+        {designerState.layers.map((layer: any, idx: number) => {
+          if (!layer.visible) return null
+
+          if (layer.type === 'photo') {
+            const p = layer
+            const clipPath = (() => {
+              switch (p.shape) {
+                case 'circle': return 'circle(50% at 50% 50%)'
+                case 'square': return 'none'
+                case 'rounded-rect': return 'inset(0 round 16px)'
+                case 'oval': return 'ellipse(50% 40% at 50% 50%)'
+                default: return 'none'
+              }
+            })()
+            const filterStr = `brightness(${p.brightness ?? 100}%) contrast(${p.contrast ?? 100}%) saturate(${p.saturate ?? 100}%) blur(${p.blur ?? 0}px)`
+
+            return (
+              <div
+                key={p.id}
+                style={{
+                  position: 'absolute',
+                  left: p.x - p.width / 2,
+                  top: p.y - p.height / 2,
+                  width: p.width,
+                  height: p.height,
+                  transform: `rotate(${p.rotation || 0}deg)`,
+                  opacity: p.opacity !== undefined ? p.opacity : 1,
+                  zIndex: idx,
+                }}
+              >
+                <div style={{
+                  width: '100%', height: '100%',
+                  clipPath, overflow: 'hidden',
+                  border: `${p.borderWidth || 0}px solid ${p.borderColor || 'transparent'}`,
+                  borderRadius: p.shape === 'square' ? 0 : p.shape === 'rounded-rect' ? 16 : '50%',
+                  boxShadow: p.shadow ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+                  background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative',
+                }}>
+                  {/* Initials (always rendered behind image) */}
+                  <span style={{ position: 'absolute', fontSize: `${p.width * 0.3}px`, fontWeight: 800, color: 'rgba(255,255,255,0.8)', userSelect: 'none' }}>
+                    {getInitials(student.fullName)}
+                  </span>
+
+                  {/* Student Image */}
+                  {student.profileImage && (
+                    <img
+                      src={student.profileImage}
+                      alt={student.fullName}
+                      draggable={false}
+                      style={{
+                        position: 'absolute', inset: 0,
+                        width: '100%', height: '100%', objectFit: 'cover',
+                        transform: `translate(${p.imgOffsetX || 0}px, ${p.imgOffsetY || 0}px) scale(${p.imgScale || 1}) scaleX(${p.flipX ? -1 : 1}) scaleY(${p.flipY ? -1 : 1})`,
+                        filter: filterStr,
+                        pointerEvents: 'none',
+                      }}
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            )
+          }
+
+          if (layer.type === 'text') {
+            const t = layer
+            let textValue = t.text
+            textValue = textValue.replace(/{name}/g, student.fullName)
+            textValue = textValue.replace(/{firstName}/g, student.fullName.split(' ')[0])
+            textValue = textValue.replace(/{date}/g, (() => {
+              const mn = ['January','February','March','April','May','June','July','August','September','October','November','December']
+              const d = new Date(student.dateOfBirth)
+              return `${mn[d.getMonth()]} ${d.getDate()}`
+            })())
+            textValue = textValue.replace(/{programme}/g, student.degreeProgramme)
+            textValue = textValue.replace(/{batch}/g, student.batch)
+
+            // Compile text outline and drop shadow styles
+            const shadowParts = []
+            if (t.outlineWidth && t.outlineWidth > 0) {
+              const w = t.outlineWidth
+              const c = t.outlineColor || '#000000'
+              shadowParts.push(
+                `${w}px 0px 0 ${c}`,
+                `-${w}px 0px 0 ${c}`,
+                `0px ${w}px 0 ${c}`,
+                `0px -${w}px 0 ${c}`,
+                `${w}px ${w}px 0 ${c}`,
+                `-${w}px -${w}px 0 ${c}`,
+                `${w}px -${w}px 0 ${c}`,
+                `-${w}px ${w}px 0 ${c}`
+              )
+            }
+            if (t.shadowBlur && t.shadowBlur > 0) {
+              const ox = t.shadowOffsetX || 0
+              const oy = t.shadowOffsetY || 2
+              const b = t.shadowBlur
+              const c = t.shadowColor || 'rgba(0,0,0,0.5)'
+              shadowParts.push(`${ox}px ${oy}px ${b}px ${c}`)
+            }
+            const textShadowValue = shadowParts.length > 0 ? shadowParts.join(', ') : 'none'
+
+            return (
+              <div
+                key={t.id}
+                style={{
+                  position: 'absolute',
+                  left: t.x, top: t.y,
+                  transform: `translate(-50%, 0) rotate(${t.rotation || 0}deg)`,
+                  fontSize: `${t.fontSize}px`,
+                  fontFamily: `'${t.fontFamily || 'Inter'}', sans-serif`,
+                  fontWeight: t.fontWeight || 600,
+                  fontStyle: t.italic ? 'italic' : 'normal',
+                  textDecoration: t.underline ? 'underline' : 'none',
+                  color: t.color || '#ffffff',
+                  opacity: t.opacity !== undefined ? t.opacity : 1,
+                  letterSpacing: `${t.letterSpacing || 0}px`,
+                  lineHeight: t.lineHeight || 1.4,
+                  textAlign: t.textAlign || 'center',
+                  whiteSpace: 'pre-wrap',
+                  zIndex: idx,
+                  userSelect: 'none',
+                  textShadow: textShadowValue,
+                }}
+              >
+                {textValue}
+              </div>
+            )
+          }
+
+          if (layer.type === 'image') {
+            const imgLayer = layer
+            return (
+              <div
+                key={imgLayer.id}
+                style={{
+                  position: 'absolute',
+                  left: imgLayer.x - imgLayer.width / 2,
+                  top: imgLayer.y - imgLayer.height / 2,
+                  width: imgLayer.width,
+                  height: imgLayer.height,
+                  transform: `rotate(${imgLayer.rotation || 0}deg)`,
+                  opacity: imgLayer.opacity !== undefined ? imgLayer.opacity : 1,
+                  zIndex: idx,
+                  pointerEvents: 'none',
+                }}
+              >
+                <img
+                  src={imgLayer.image}
+                  alt={imgLayer.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'fill',
+                  }}
+                  draggable={false}
+                />
+              </div>
+            )
+          }
+
+          return null
+        })}
+      </div>
+    )
+  }
+
   return (
     <div
       ref={ref}
@@ -123,7 +321,7 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
       )}
 
       {/* Photo (Draggable if custom) */}
-      {isCustom ? (
+      {isCustom && (
         <Draggable
           x={config!.photoX}
           y={config!.photoY}
@@ -172,27 +370,6 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
             )}
           </div>
         </Draggable>
-      ) : (
-        <div style={{
-          position: 'relative',
-          width: '140px',
-          height: '175px',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          border: '3px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-          background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 2,
-        }}>
-          {student.profileImage ? (
-            <img src={student.profileImage} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
-          ) : (
-            <span style={{ fontSize: '48px', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>{getInitials(student.fullName)}</span>
-          )}
-        </div>
       )}
 
       {/* Custom Texts */}
@@ -270,8 +447,28 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
             {student.fullName}
           </h1>
 
-          {/* Placeholder for Photo (to keep spacing) */}
-          <div style={{ width: '140px', height: '175px', marginBottom: '24px' }} />
+          {/* Actual photo inside the default layout flow */}
+          <div style={{
+            position: 'relative',
+            width: '140px',
+            height: '175px',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            border: '3px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '24px',
+            zIndex: 2,
+          }}>
+            {student.profileImage ? (
+              <img src={student.profileImage} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
+            ) : (
+              <span style={{ fontSize: '48px', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>{getInitials(student.fullName)}</span>
+            )}
+          </div>
 
           {/* Date */}
           <div style={{

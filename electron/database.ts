@@ -490,7 +490,7 @@ export function registerDatabaseHandlers() {
           }
 
         // Recalculate GPA for all affected students
-        for (const studentId of uniqueUpdates) {
+        for (const studentId of Array.from(uniqueUpdates)) {
           await recalculateGpa(studentId)
         }
         console.log(`Parsed PDF and updated ${uniqueUpdates.size} student results.`)

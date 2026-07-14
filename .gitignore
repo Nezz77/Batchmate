@@ -65,3 +65,4 @@ prisma/*.sqlite
 /dist-electron/
 /release/
 /.vite/
+/dmg-output/
