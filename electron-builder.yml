@@ -9,17 +9,24 @@ directories:
 files:
   - dist/**/*
   - dist-electron/**/*
-  - node_modules/@prisma/client/**/*
-  - node_modules/.prisma/**/*
-  - prisma/**/*
-  - "!node_modules/@prisma/engines/**/*"
-  - "!.venv/**/*"
+  - node_modules/**/*
+  - prisma/schema.prisma
+  - prisma/migrations/**/*
+  - "!node_modules/.cache/**/*"
+  - "!node_modules/.vite/**/*"
   - "!.venv"
+  - "!.venv/**/*"
+
+# Unpack native binaries from ASAR so they can be loaded at runtime
+asarUnpack:
+  - node_modules/.prisma/**/*
+  - node_modules/@prisma/engines/**/*
+  - node_modules/@prisma/client/**/*
 
 extraResources:
   - from: app_icons/
     to: app_icons/
-  - from: dev.db
+  - from: prisma/dev.db
     to: batchmate.db
 
 mac:
@@ -27,25 +34,6 @@ mac:
   category: public.app-category.education
   target:
     - dmg
-    - zip
-
-win:
-  icon: app_icons/batchmate.png
-  target:
-    - nsis
-    - portable
-
-linux:
-  icon: app_icons/batchmate.png
-  category: Education
-  target:
-    - AppImage
-    - deb
-
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  createDesktopShortcut: true
 
 dmg:
   contents:

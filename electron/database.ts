@@ -5,7 +5,27 @@ import fs from 'fs'
 
 const isDev = !!process.env.VITE_DEV_SERVER_URL
 
-const dbPath = isDev 
+// In production, Prisma's native query engine is unpacked from ASAR into
+// app.asar.unpacked — we must point the env var there before instantiating
+// PrismaClient, otherwise the module loader can't find the .node binary.
+if (!isDev) {
+  const engineDir = path.join(
+    process.resourcesPath,
+    'app.asar.unpacked',
+    'node_modules',
+    '.prisma',
+    'client'
+  )
+  // Locate the .node query engine file for the current platform
+  const engineFile = fs.readdirSync(engineDir).find(f =>
+    f.startsWith('libquery_engine') && f.endsWith('.node')
+  )
+  if (engineFile) {
+    process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(engineDir, engineFile)
+  }
+}
+
+const dbPath = isDev
   ? path.join(process.cwd(), 'prisma', 'dev.db')
   : path.join(app.getPath('userData'), 'database.sqlite')
 
