@@ -66,3 +66,46 @@ prisma/*.sqlite
 /release/
 /.vite/
 /dmg-output/
+
+# macOS Installers & Archives
+*.dmg
+*.zip
+*.pkg
+*.tar.gz
+*.tar.bz2
+
+# Photos & Images (student/personal data)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.bmp
+*.tiff
+*.tif
+*.heic
+*.heif
+*.raw
+# Allow app icons and public assets
+!app_icons/**
+!public/icons/**
+!public/*.png
+!public/*.ico
+!public/*.svg
+!src/assets/**
+
+# PDFs (transcripts, GPA reports, marksheets)
+*.pdf
+
+# GPA / Academic Data files
+*gpa*
+*GPA*
+*marksheet*
+*Marksheet*
+*transcript*
+*Transcript*
+*grades*
+*Grades*
+*result*
+*Result*
+Default_bday_template/

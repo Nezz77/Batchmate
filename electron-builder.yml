@@ -13,6 +13,8 @@ files:
   - node_modules/.prisma/**/*
   - prisma/**/*
   - "!node_modules/@prisma/engines/**/*"
+  - "!.venv/**/*"
+  - "!.venv"
 
 extraResources:
   - from: app_icons/
