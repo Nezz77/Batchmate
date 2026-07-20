@@ -1,27 +1,27 @@
 import { ipcMain, app, shell } from 'electron'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../src/generated/prisma-client'
 import path from 'path'
 import fs from 'fs'
 
 const isDev = !!process.env.VITE_DEV_SERVER_URL
 
-// In production, Prisma's native query engine is unpacked from ASAR into
-// app.asar.unpacked — we must point the env var there before instantiating
-// PrismaClient, otherwise the module loader can't find the .node binary.
+// In production the .node query engine lives in app.asar.unpacked (via asarUnpack).
+// We must tell Prisma exactly where it is before creating the client.
 if (!isDev) {
   const engineDir = path.join(
     process.resourcesPath,
     'app.asar.unpacked',
-    'node_modules',
-    '.prisma',
-    'client'
+    'src',
+    'generated',
+    'prisma-client'
   )
-  // Locate the .node query engine file for the current platform
-  const engineFile = fs.readdirSync(engineDir).find(f =>
-    f.startsWith('libquery_engine') && f.endsWith('.node')
-  )
-  if (engineFile) {
-    process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(engineDir, engineFile)
+  if (fs.existsSync(engineDir)) {
+    const engineFile = fs.readdirSync(engineDir).find(f =>
+      f.startsWith('libquery_engine') && f.endsWith('.node')
+    )
+    if (engineFile) {
+      process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(engineDir, engineFile)
+    }
   }
 }
 

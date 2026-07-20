@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id              String         @id @default(cuid())
+  indexNumber     String         @unique
+  fullName        String
+  email           String?        @unique
+  dateOfBirth     DateTime
+  profileImage    String?
+  degreeProgramme String // "IT", "ITM", "AI"
+  gpa             Float          @default(0.0)
+  totalCredits    Float          @default(0.0)
+  batch           String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  courseResults   CourseResult[]
+}
+
+model CourseResult {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectCode String
+  subjectName String?
+  grade       String
+  credits     Float    @default(3.0)
+  semester    String?
+  createdAt   DateTime @default(now())
+
+  @@unique([studentId, subjectCode])
+}
+
+model ResultSheet {
+  id          String   @id @default(cuid())
+  filename    String
+  filepath    String
+  batch       String
+  semester    String
+  subjectCode String?
+  subjectName String?
+  uploadedAt  DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  credits   Float
+  semester  String
+  programme String   @default("IT") // "IT", "ITM", "AI" or "All"
+  isNonGpa  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

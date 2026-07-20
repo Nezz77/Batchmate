@@ -1,5 +1,8 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+  // Custom output keeps the generated client outside hidden node_modules/.prisma
+  // so electron-builder's glob includes it without workarounds
 }
 
 datasource db {

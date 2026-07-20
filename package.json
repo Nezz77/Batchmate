@@ -19,21 +19,7 @@
     "electron:build": "npm run build && electron-builder",
     "electron:pack": "npm run build && electron-builder --dir"
   },
-  "build": {
-    "appId": "com.antigravity.batchmate",
-    "mac": {
-      "icon": "app_icons/batchmate.png"
-    },
-    "win": {
-      "icon": "app_icons/batchmate.png"
-    },
-    "linux": {
-      "icon": "app_icons/batchmate.png"
-    },
-    "directories": {
-      "output": "release"
-    }
-  },
+
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "html-to-image": "^1.11.11",

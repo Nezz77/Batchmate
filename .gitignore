@@ -40,6 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Keep generated Prisma client committed — the .node engine binary is needed for packaging
+# /src/generated/prisma-client is intentionally tracked
 /src/generated/prisma
 
 # App Data & Privacy (Do NOT commit personal student data)

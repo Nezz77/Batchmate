@@ -13,8 +13,9 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: [
-                '@prisma/client', 
+          external: [
+                '@prisma/client',
+                '../src/generated/prisma-client',
                 'xlsx', 
                 'pdfjs-dist', 
                 'pdfjs-dist/legacy/build/pdf.mjs'

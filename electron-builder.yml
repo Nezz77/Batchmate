@@ -6,22 +6,23 @@ directories:
   output: release
   buildResources: build
 
+# The Prisma client is generated to src/generated/prisma-client — a normal
+# (non-hidden) directory that electron-builder's glob includes automatically.
+# The .node query engine inside it is unpacked from ASAR via asarUnpack.
 files:
   - dist/**/*
   - dist-electron/**/*
-  - node_modules/**/*
+  - src/generated/prisma-client/**/*
+  - node_modules/@prisma/client/**/*
+  - node_modules/@prisma/engines/**/*
   - prisma/schema.prisma
-  - prisma/migrations/**/*
   - "!node_modules/.cache/**/*"
-  - "!node_modules/.vite/**/*"
   - "!.venv"
   - "!.venv/**/*"
 
-# Unpack native binaries from ASAR so they can be loaded at runtime
 asarUnpack:
-  - node_modules/.prisma/**/*
+  - src/generated/prisma-client/*.node
   - node_modules/@prisma/engines/**/*
-  - node_modules/@prisma/client/**/*
 
 extraResources:
   - from: app_icons/
