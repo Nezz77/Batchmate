@@ -15,14 +15,21 @@ files:
   - src/generated/prisma-client/**/*
   - node_modules/@prisma/client/**/*
   - node_modules/@prisma/engines/**/*
+  - node_modules/.prisma/**/*
   - prisma/schema.prisma
   - "!node_modules/.cache/**/*"
-  - "!.venv"
   - "!.venv/**/*"
+  - "!.git/**/*"
+  - "!.next/**/*"
+  - "!Images/**/*"
+  - "!Resultsheets/**/*"
+  - "!result-sheets/**/*"
+  - "!Default_bday_template/**/*"
 
 asarUnpack:
   - src/generated/prisma-client/*.node
   - node_modules/@prisma/engines/**/*
+  - node_modules/.prisma/client/*.node
 
 extraResources:
   - from: app_icons/

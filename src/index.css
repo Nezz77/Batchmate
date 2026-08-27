@@ -1811,24 +1811,354 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
+/* ── iPhone 17 & Mobile Optimization ────────────────────────────────── */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --mobile-header-height: 56px;
+  --mobile-tabbar-height: 64px;
 }
 
+/* Hide Mobile Elements on Desktop by default */
+.mobile-header,
+.mobile-tab-bar,
+.mobile-preview-toggle {
+  display: none;
+}
+
+/* ── Mobile Header & Tab Bar Styles ─────────────────────────────────── */
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--mobile-header-height) + var(--sat));
+  padding-top: var(--sat);
+  padding-left: max(16px, var(--sal));
+  padding-right: max(16px, var(--sar));
+  background: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-header-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.mobile-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.mobile-header-subtitle {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-preview-toggle {
+  display: flex !important;
+  color: var(--text-secondary);
+}
+
+.mobile-preview-toggle.active {
+  color: var(--accent);
+  background: var(--accent-muted);
+}
+
+/* ── Mobile Bottom Tab Bar ────────────────────────────────────────── */
+.mobile-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--mobile-tabbar-height) + var(--sab));
+  padding-bottom: var(--sab);
+  background: rgba(11, 17, 32, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 100;
+}
+
+.mobile-tab-bar-container {
+  display: flex;
+  height: var(--mobile-tabbar-height);
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+}
+
+.mobile-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  height: 100%;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 12px;
+  padding: 4px 0;
+}
+
+.mobile-tab-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-tab-item.active {
+  color: var(--accent-light);
+}
+
+.mobile-tab-item.active .mobile-tab-icon-wrapper {
+  background: var(--accent-muted);
+  color: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.mobile-tab-icon-wrapper {
+  width: 32px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.mobile-tab-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ── Media Query for iPhone / Mobile Viewports (<= 768px) ────────── */
 @media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-header {
+    display: flex !important;
+  }
+
+  .mobile-tab-bar {
+    display: block !important;
+  }
+
   .main-content {
-    margin-left: var(--sidebar-collapsed);
-    padding: 20px;
+    margin-left: 0 !important;
+    padding: calc(var(--mobile-header-height) + var(--sat) + 16px) 16px calc(var(--mobile-tabbar-height) + var(--sab) + 16px) 16px !important;
+    min-height: 100vh;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .stat-card {
+    padding: 14px !important;
+  }
+
+  .stat-card-value {
+    font-size: 20px !important;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .students-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .search-box {
+    width: 100% !important;
+  }
+
+  .filter-group {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Bottom sheet style for modals on mobile */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal {
+    max-width: 100% !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
+    max-height: 88vh !important;
+    animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 }
+
+/* ── iPhone 17 Device Simulator Frame (Desktop Preview) ──────────── */
+.iphone-simulator-active {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #050811;
+  padding: 20px 0;
+}
+
+.iphone-simulator-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.iphone-17-frame {
+  width: 393px;
+  height: 852px;
+  background: #0B1120;
+  border-radius: 54px;
+  box-shadow:
+    0 0 0 12px #1E293B,
+    0 0 0 14px #334155,
+    0 25px 60px -15px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.iphone-dynamic-island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 35px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  gap: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.camera-lens {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #0B1120;
+  border: 2px solid #1E293B;
+}
+
+.sensor-lens {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0F172A;
+}
+
+.iphone-screen {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iphone-screen .mobile-header {
+  display: flex !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: 48px;
+}
+
+.iphone-screen .mobile-tab-bar {
+  display: block !important;
+  position: absolute !important;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.iphone-screen .main-content {
+  margin-left: 0 !important;
+  padding: 110px 16px 84px 16px !important;
+  flex: 1;
+}
+
+.ios-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  z-index: 200;
+  pointer-events: none;
+}
+

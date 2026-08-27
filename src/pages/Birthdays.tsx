@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Palette } from 'lucide-react'
 import FlyerDesigner from '../components/FlyerDesigner'
 import type { Student } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -123,7 +124,7 @@ export default function Birthdays() {
                         <div className="student-avatar" style={{ width: 42, height: 42, fontSize: 14 }}>
                           {student.profileImage ? (
                             <img
-                              src={student.profileImage}
+                              src={getImageUrl(student.profileImage)}
                               alt={student.fullName}
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               onError={(e) => {

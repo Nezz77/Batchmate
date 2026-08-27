@@ -10,6 +10,12 @@
     "start": "npm run dev",
     "dev": "vite",
     "build": "tsc && vite build && tsc -p tsconfig.node.json",
+    "build:mobile": "VITE_TARGET=mobile vite build",
+    "mobile:dev": "VITE_TARGET=mobile vite --host",
+    "mobile:sim": "bash scripts/open-sim.sh",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "npm run build:mobile && cap sync",
+    "cap:open:ios": "cap open ios",
     "preview": "vite preview",
     "ingest": "tsx --env-file=.env scripts/ingest.ts",
     "prisma:migrate": "prisma migrate dev",
@@ -19,8 +25,8 @@
     "electron:build": "npm run build && electron-builder",
     "electron:pack": "npm run build && electron-builder --dir"
   },
-
   "dependencies": {
+    "@capacitor/core": "^8.5.0",
     "@prisma/client": "^5.22.0",
     "html-to-image": "^1.11.11",
     "lucide-react": "^0.525.0",
@@ -33,6 +39,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

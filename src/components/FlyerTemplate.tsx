@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import type { Student, FlyerConfig } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 interface FlyerTemplateProps {
   student: Student
@@ -165,7 +166,7 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
                   {/* Student Image */}
                   {student.profileImage && (
                     <img
-                      src={student.profileImage}
+                      src={getImageUrl(student.profileImage)}
                       alt={student.fullName}
                       draggable={false}
                       style={{
@@ -345,7 +346,7 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
           }}>
             {student.profileImage ? (
               <img
-                src={student.profileImage}
+                src={getImageUrl(student.profileImage)}
                 alt={student.fullName}
                 onWheel={handleWheelImg}
                 onMouseDown={handleMouseDownImg}
@@ -464,7 +465,7 @@ export default function FlyerTemplate({ student, flyerRef, config, isEditing, on
             zIndex: 2,
           }}>
             {student.profileImage ? (
-              <img src={student.profileImage} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
+              <img src={getImageUrl(student.profileImage)} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
             ) : (
               <span style={{ fontSize: '48px', fontWeight: 800, color: 'rgba(255,255,255,0.8)' }}>{getInitials(student.fullName)}</span>
             )}

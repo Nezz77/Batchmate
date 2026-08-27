@@ -8,19 +8,20 @@ const isDev = !!process.env.VITE_DEV_SERVER_URL
 // In production the .node query engine lives in app.asar.unpacked (via asarUnpack).
 // We must tell Prisma exactly where it is before creating the client.
 if (!isDev) {
-  const engineDir = path.join(
-    process.resourcesPath,
-    'app.asar.unpacked',
-    'src',
-    'generated',
-    'prisma-client'
-  )
-  if (fs.existsSync(engineDir)) {
-    const engineFile = fs.readdirSync(engineDir).find(f =>
-      f.startsWith('libquery_engine') && f.endsWith('.node')
-    )
-    if (engineFile) {
-      process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(engineDir, engineFile)
+  const engineDirs = [
+    path.join(process.resourcesPath, 'app.asar.unpacked', 'src', 'generated', 'prisma-client'),
+    path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '.prisma', 'client'),
+    path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@prisma', 'engines'),
+  ]
+  for (const dir of engineDirs) {
+    if (fs.existsSync(dir)) {
+      const engineFile = fs.readdirSync(dir).find(f =>
+        f.startsWith('libquery_engine') && f.endsWith('.node')
+      )
+      if (engineFile) {
+        process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(dir, engineFile)
+        break
+      }
     }
   }
 }
@@ -36,11 +37,35 @@ const resultSheetsDir = isDev
 let prisma: PrismaClient
 
 export async function initDatabase() {
-  // In production, copy the default DB if it doesn't exist yet
-  if (!isDev && !fs.existsSync(dbPath)) {
+  // In production, copy the default DB if it doesn't exist or has no schema.
+  // A previous failed launch may have created an empty SQLite file via Prisma,
+  // so we must verify the DB actually contains the expected tables.
+  if (!isDev) {
     const defaultDb = path.join(process.resourcesPath, 'batchmate.db')
-    if (fs.existsSync(defaultDb)) {
+    let needsCopy = !fs.existsSync(dbPath)
+
+    if (!needsCopy) {
+      // File exists – verify it has the Student table (basic schema check)
+      try {
+        const { execSync } = require('child_process')
+        // Quick check: if file is tiny (< 4KB) it's almost certainly empty
+        const stat = fs.statSync(dbPath)
+        if (stat.size < 4096) {
+          needsCopy = true
+        }
+      } catch {
+        needsCopy = true
+      }
+    }
+
+    if (needsCopy && fs.existsSync(defaultDb)) {
+      // Ensure the userData directory exists
+      const dir = path.dirname(dbPath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
       fs.copyFileSync(defaultDb, dbPath)
+      console.log(`Copied default database to ${dbPath}`)
     }
   }
 

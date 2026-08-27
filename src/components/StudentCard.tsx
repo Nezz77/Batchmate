@@ -1,4 +1,5 @@
 import type { Student } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 interface StudentCardProps {
   student: Student
@@ -42,7 +43,7 @@ export default function StudentCard({ student, onClick }: StudentCardProps) {
         <div className="student-avatar">
           {student.profileImage ? (
             <img
-              src={student.profileImage}
+              src={getImageUrl(student.profileImage)}
               alt={student.fullName}
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none'

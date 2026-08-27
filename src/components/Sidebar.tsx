@@ -8,13 +8,14 @@ import {
   BookOpen
 } from 'lucide-react'
 import ThemeSwitcher from './ThemeSwitcher'
+import { getImageUrl } from '../utils/image'
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/students', icon: Users, label: 'Students' },
   { path: '/import', icon: Upload, label: 'Import Data' },
-  { path: '/results', icon: FileText, label: 'Result Sheets' },
-  { path: '/curriculum', icon: BookOpen, label: 'Semester Details' },
+  { path: '/results', icon: FileText, label: 'Results' },
+  { path: '/curriculum', icon: BookOpen, label: 'Curriculum' },
   { path: '/birthdays', icon: Cake, label: 'Birthdays' },
 ]
 
@@ -25,7 +26,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-header">
         <img
-          src="/app_icons/batchmate.png"
+          src={getImageUrl('/app_icons/batchmate.png')}
           alt="Batchmate"
           className="sidebar-logo"
         />

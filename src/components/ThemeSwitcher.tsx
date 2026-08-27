@@ -2,7 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Moon, Sun, Palette, Check } from 'lucide-react';
 
-export default function ThemeSwitcher() {
+interface ThemeSwitcherProps {
+  placement?: 'top' | 'bottom';
+  align?: 'left' | 'right';
+}
+
+export default function ThemeSwitcher({ placement = 'top', align = 'left' }: ThemeSwitcherProps) {
   const { mode, theme, setMode, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,6 +30,9 @@ export default function ThemeSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isBottom = placement === 'bottom';
+  const isRight = align === 'right';
+
   return (
     <div className="theme-switcher-container" ref={dropdownRef} style={{ position: 'relative' }}>
       <button 
@@ -41,16 +49,18 @@ export default function ThemeSwitcher() {
           className="theme-dropdown liquid-glass"
           style={{
             position: 'absolute',
-            bottom: '100%',
-            left: '0',
+            top: isBottom ? 'calc(100% + 8px)' : 'auto',
+            bottom: isBottom ? 'auto' : 'calc(100% + 8px)',
+            left: isRight ? 'auto' : '0',
+            right: isRight ? '0' : 'auto',
             width: '220px',
-            marginBottom: '10px',
             padding: '16px',
             borderRadius: 'var(--radius-lg)',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            zIndex: 1000
+            zIndex: 9999,
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           }}
         >
           <div>

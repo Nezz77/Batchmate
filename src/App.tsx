@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import MobileHeader from './components/MobileHeader'
+import MobileTabBar from './components/MobileTabBar'
 import Dashboard from './pages/Dashboard'
 import Students from './pages/Students'
 import Import from './pages/Import'
@@ -8,6 +11,8 @@ import Curriculum from './pages/Curriculum'
 import Birthdays from './pages/Birthdays'
 
 export default function App() {
+  const [isIPhonePreview, setIsIPhonePreview] = useState(false)
+
   return (
     <HashRouter>
       <div className="ambient-background">
@@ -15,18 +20,59 @@ export default function App() {
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
       </div>
-      <div className="app-layout">
-        <Sidebar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<Students />} />
-            <Route path="/import" element={<Import />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/curriculum" element={<Curriculum />} />
-            <Route path="/birthdays" element={<Birthdays />} />
-          </Routes>
-        </main>
+
+      <div className={`app-root ${isIPhonePreview ? 'iphone-simulator-active' : ''}`}>
+        {isIPhonePreview ? (
+          <div className="iphone-simulator-wrapper">
+            <div className="iphone-17-frame">
+              {/* iPhone Dynamic Island / Notch */}
+              <div className="iphone-dynamic-island">
+                <div className="camera-lens"></div>
+                <div className="sensor-lens"></div>
+              </div>
+
+              {/* iPhone Screen Container */}
+              <div className="iphone-screen">
+                <MobileHeader
+                  isIPhonePreview={isIPhonePreview}
+                  onToggleIPhonePreview={() => setIsIPhonePreview(false)}
+                />
+                <main className="main-content mobile-main-content">
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/students" element={<Students />} />
+                    <Route path="/import" element={<Import />} />
+                    <Route path="/results" element={<Results />} />
+                    <Route path="/curriculum" element={<Curriculum />} />
+                    <Route path="/birthdays" element={<Birthdays />} />
+                  </Routes>
+                </main>
+                <MobileTabBar />
+                {/* iOS Home Indicator Bar */}
+                <div className="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="app-layout">
+            <Sidebar />
+            <MobileHeader
+              isIPhonePreview={isIPhonePreview}
+              onToggleIPhonePreview={() => setIsIPhonePreview(true)}
+            />
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/students" element={<Students />} />
+                <Route path="/import" element={<Import />} />
+                <Route path="/results" element={<Results />} />
+                <Route path="/curriculum" element={<Curriculum />} />
+                <Route path="/birthdays" element={<Birthdays />} />
+              </Routes>
+            </main>
+            <MobileTabBar />
+          </div>
+        )}
       </div>
     </HashRouter>
   )

@@ -7,6 +7,7 @@ import {
   GripVertical, Settings2, Palette
 } from 'lucide-react'
 import type { Student } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -790,7 +791,7 @@ export default function FlyerDesigner({ student, students, onSwitchStudent, onCl
             {/* Student Image */}
             {student.profileImage && (
               <img
-                src={student.profileImage}
+                src={getImageUrl(student.profileImage)}
                 alt={student.fullName}
                 draggable={false}
                 style={{
@@ -1793,7 +1794,7 @@ export default function FlyerDesigner({ student, students, onSwitchStudent, onCl
                       fontSize: 9, fontWeight: 700, flexShrink: 0,
                     }}>
                       {s.profileImage ? (
-                        <img src={s.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={getImageUrl(s.profileImage)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         s.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       )}

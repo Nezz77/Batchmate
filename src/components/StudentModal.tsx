@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, BookOpen, User, Pencil, Check, Trash2, Camera } from 'lucide-react'
 import type { Student, CourseResult } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 interface StudentModalProps {
   student: Student | null
@@ -137,7 +138,7 @@ export default function StudentModal({ student, onClose, onSave, onDelete }: Stu
           >
             {(editing ? form.profileImage : student.profileImage) ? (
               <img
-                src={(editing ? form.profileImage : student.profileImage)!}
+                src={getImageUrl(editing ? form.profileImage : student.profileImage)!}
                 alt={student.fullName}
                 onError={(e) => {
                   const el = e.target as HTMLImageElement

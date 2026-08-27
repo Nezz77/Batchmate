@@ -5,6 +5,7 @@ import {
 } from 'recharts'
 import { Users, GraduationCap, TrendingUp, Cake } from 'lucide-react'
 import type { DashboardStats, Student } from '../types/electron.d'
+import { getImageUrl } from '../utils/image'
 
 const PROGRAMME_COLORS: Record<string, string> = {
   IT: '#3B82F6',
@@ -61,7 +62,7 @@ function UpcomingBirthdayItem({ student }: { student: Student }) {
       <div className="student-avatar" style={{ width: 40, height: 40, fontSize: 14 }}>
         {student.profileImage ? (
           <img
-            src={student.profileImage}
+            src={getImageUrl(student.profileImage)}
             alt={student.fullName}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => {

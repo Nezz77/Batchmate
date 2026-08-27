@@ -111,3 +111,9 @@ prisma/*.sqlite
 *result*
 *Result*
 Default_bday_template/
+
+# Capacitor / iOS native project (auto-generated, large)
+ios/
+
+# Seed data (contains private student records)
+src/utils/seedData.ts
